@@ -1,0 +1,10 @@
+#任何 Debug Realease 文件夹下只将.exe文件放入版本库
+
+
+**/Debug/*
+!**/Debug/*.exe
+**/Release/*
+!**/Release/*.exe
+
+#忽略.vs文件
+/.vs/
