@@ -69,7 +69,7 @@ private:
 	wchar_t * arr;//数组
 
 	piece * pre;//上一个piece
-	piece * nexe;//下一个piece
+	piece * next;//下一个piece
 
 //	int Pointpos;//point所在的位置
 
@@ -87,11 +87,13 @@ public:
 	int RleaseProcess();//释放gapbuffer为0;
 	void OverflowProcess(); //用于满了后申请数组
 
-	int LeftMovePoint();//不改变原句，光标左移
-	int RightMovePoint();//不改变原句，光标右移
+	int PointMove(int p); //为正，光标往行尾移动p位。为负，光标往行首移动p位。
+	int PointMoveto(int d);//将光标移动到第d个字符
+	
+//PointMove( -1 )		int LeftMovePoint();//不改变原句，光标左移
+//PointMove( 1 )		int RightMovePoint();//不改变原句，光标右移
 	int Gapmove();//改变point后移动gap
 
-	void Setlen();//设置len
 	int Getlen();//取len 有效字符长度（用户眼中字符长度）
 //无用	int Getlen(int m, int p);//取从数组index m 到index p 距离内(即传递mark与point的成员长)，有效字符串长度
 	int UsertoGap(int );//传入面向user字符的位置，返回在arr中的真实位置
@@ -101,14 +103,16 @@ public:
 //无用	piece * Getpiece();//取目前piece的地址
 	wchar_t * Getstr();//取有效字符串
 
-	int Insert(const wchar_t &c, int p);//插入一个字符
-	int Insert(const wchar_t * &cc,int p, int len);//插入字符串
-	int Delete(const wchar_t &c, int d);//删除一个字符
-	int Delete(const wchar_t * &cc, int p,int len);//删除一串字符,在userbuffer的第p个位置删除len长度元素
-	int Rwrite(const wchar_t &c, int d);//替换一个字符
-	int Rwrite(const wchar_t * &cc, int p, int len);//替换一串字符,在userbuffer的第p个位置删除len长度元素
+	void Push(const wchar_t &c);//插入一个字符
+	void Insert(const wchar_t * &cc);//插入字符串
+	void Pop(int p);//删除一个字符，p=1删除光标后面的相当于del , p=-1删除光标前面的相当于backspace。
+	void Delete();//删除标记mark到光标gstart.mark标记在第mark字符的右侧，mark+1的左侧。
+	void Rwrite(const wchar_t &c);//替换输入下一字符
+	void Rwrite(const wchar_t * &cc);//替换输入一串字符
 	int Search(const wchar_t * &c, position &m, position &p);//找到所求字符串c的位置，并且起始为mark，结束为point
 	int Replace(const wchar_t * &cc, const position m,const position p);//将mark到point处的字符串
+	
+	/*------------------------------*/
 
 
 };

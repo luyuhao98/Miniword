@@ -20,8 +20,9 @@ piece::piece(int sz)
 /*析构一个piece,并连接上下指针*/
 piece::~piece()
 {
-	delete[] arr;
-	arr = NULL;
+	pre->next = next;
+	next->pre = pre;
+	delete this;
 }
 
 /*判断piece是否为满*/
@@ -78,6 +79,7 @@ void piece::OverflowProcess()
 	Syntax: std::copy(InIt first, InIt last, OutIt x);
 	其中：	fist [IN]: 要拷贝元素的首地址
 		last [IN]:要拷贝元素的最后一个元素的下一个地址
+		last = first + num  其中num为元素个数
 		[OUT] : 拷贝的目的地的首地址
 	集成memcpy,memmove。
 	所有数组复制操作请均使用这种方式
@@ -89,29 +91,73 @@ void piece::OverflowProcess()
 	gend += GapIncrement;
 }
 
+/*为正，光标往行尾移动p位。为负，光标往行首移动p位。
+	PointMove(1) 跟 LeftMovePoint 等价
+*/
 
-/*不改变原句，光标左移*/
-
-int piece::LeftMovePoint() {
-	/*左移到头，后序可能增加回到上一行行尾功能*/
-	if (gstart == 0) return 0;
-
-	arr[gend] = arr[--gstart];
-	return 1;//行内左移成功
-}
-
-
-/*不改变原句，光标右移*/
-
-int piece::RightMovePoint()
+int piece::PointMove(int p) 
 {
-	/*右移到头，后序可能增加进入下一行行头功能*/
-	if (gstart == len) return 0;
-
-	arr[gstart++] = arr[gend++];
-	return 1;//行内右移成功
+	if (!IsPoint) return 0;
+	if (p > 0) {
+		if (p == 1 && gstart == len)
+		{
+			//move point to next line begin
+			return 1;
+		}
+		if (p > len - gstart)
+			return 0;
+		else {
+			std::copy(arr + gend, arr + gend + p, arr + gstart);
+			gstart += p;
+		}
+	}
+	else {
+		p = - p;
+		if (p == 1 && gstart == 0)
+		{
+			//move point to previous line end
+			return 1;
+		}
+		if (p > gstart)
+			return 0;
+		else {
+			std::copy(arr + gstart - p, arr + gstart, arr + gend - p);
+			gstart -= p;
+		}
+	}
+	return 1;
 }
 
+/*将光标移动到第d个字符*/
+
+int piece ::PointMoveto(int d)
+{
+	d = d - gstart;
+	PointMove(d);
+}
+//
+///*不改变原句，光标左移*/
+//
+//int piece::LeftMovePoint() {
+//	/*左移到头，后序可能增加回到上一行行尾功能*/
+//	if (gstart == 0) return 0;
+//
+//	arr[gend] = arr[--gstart];
+//	return 1;//行内左移成功
+//}
+//
+//
+///*不改变原句，光标右移*/
+//
+//int piece::RightMovePoint()
+//{
+//	/*右移到头，后序可能增加进入下一行行头功能*/
+//	if (gstart == len) return 0;
+//
+//	arr[gstart++] = arr[gend++];
+//	return 1;//行内右移成功
+//}
+//
 
 /*改变point后移动gap*/
 
@@ -119,20 +165,17 @@ int piece::Gapmove()
 {
 	if (!IsPoint) {
 		/*将后半的数据拷贝与前半合并*/
-		std::copy(arr + gend, arr + gend + len - gstart, arr + gstart);
+		std::copy(arr + gend, arr + size, arr + gstart);
 		gend = size;
+		gstart = len;
 		//piece::Savespace();
 	}
 	return 1;//成功移动
 }
 
 
-/*设置len*/
 
-void piece::Setlen()
-{
-	len=size+gstart-gend;
-}
+
 /*取len 有效字符长度（用户眼中字符长度）*/
 
 int piece::Getlen()
@@ -171,10 +214,100 @@ int piece::Gapgsize()
 /*取有效字符串*/
 wchar_t * piece::Getstr()
 {
+	Gapmove();
 	wchar_t* newarr = new wchar_t[len + 1];
 	std::copy(arr, arr + len, newarr);
 	return newarr;
 }
+
+/* point后插入一个字符*/
+
+void piece::Push(const wchar_t &c)
+{
+	if (IsFull() == true) {
+		OverflowProcess();
+	}
+	arr[gstart++] = c;
+	len++;
+}
+
+/*插入字符串*/
+void piece::Insert(const wchar_t * &cc)
+{
+	int cclen = wcslen(cc);
+	while (cclen > Gapgsize()) {
+		OverflowProcess();
+		cclen -= Gapgsize();
+	}
+	cclen = wcslen(cc);
+	std::copy(cc, cc + cclen, arr + gstart);
+	PointMove(cclen);
+	len += cclen;
+}
+
+/*删除一个字符*/
+
+void piece::Pop(int p)
+{
+	if (p == -1) {
+		if (gstart == 0)
+		{
+			/*合并本段与上一段*/
+		}
+		else {
+			len--;
+			gstart--;
+		}
+	}
+	if (p == 1) {
+		if (gstart == len)
+		{
+			/*合并本段与下一段*/
+		}
+		else {
+			len--;
+			gend++;
+		}
+	}
+
+}
+
+/*删除标记mark到光标gstart.mark标记在第mark字符的右侧，mark+1的左侧。*/
+
+void piece :: Delete() 
+{
+	if (gstart <= mark) {
+		len -= mark - gstart;
+		gend += mark - gstart;
+	}
+	else{
+		len -= gstart - mark;
+		gstart = mark;
+	}
+}
+
+
+/*替换输入下一字符*/
+void piece::Rwrite(const wchar_t &c)
+{
+	arr[gstart++] = c;
+	gend++;
+}
+/*替换输入一串字符*/
+void piece :: Rwrite(const wchar_t * &cc)
+{
+	int cclen = wcslen(cc);
+	if (cclen >= len - gstart) {
+		gend = size;
+	}
+	else {
+		gend += cclen;
+	}
+	Insert(cc);
+}
+int Search(const wchar_t * &c, position &m, position &p);//找到所求字符串c的位置，并且起始为mark，结束为point
+int Replace(const wchar_t * &cc, position &m, position &p);//将mark到point处的字符串
+
 /*
 class piece
 {
@@ -197,15 +330,6 @@ public:
 int Readfile();//从这行读文件 *
 int Writefile(); //用这行写入文件*
 
-
-int Insert(const char &c, int p);//插入一个字符
-int Insert(const char * &cc, int p, int len);//插入字符串
-int Delete(const char &c, int d);//删除一个字符
-int Delete(const char * &cc, int p, int len);//删除一串字符,在userbuffer的第p个位置删除len长度元素
-int Rwrite(const char &c, int d);//替换一个字符
-int Rwrite(const char * &cc, int p, int len);//替换一串字符,在userbuffer的第p个位置删除len长度元素
-int Search(const char * &c, position &m, position &p);//找到所求字符串c的位置，并且起始为mark，结束为point
-int Replace(const char * &cc, position &m, position &p);//将mark到point处的字符串
 
 };
 */
