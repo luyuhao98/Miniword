@@ -2,10 +2,11 @@
 
 const int GapIncrement = 50;// gapArticle每次增加大小
 const int DefaultSize = 100;//默认
+typedef class Line * line;
 enum stack { LF=-1 , RG=1 };
 
 class position {
-	class Line* y;	//所在Line
+	line y;	//所在Line
 	int x;	//在有效字符的位置
 };	//一个光标点point, 一个记录点mark
 /*
@@ -26,7 +27,7 @@ class position {
 	若D >= newLine->len,则光标移动到新行的最后一位，point.x = newLine->len;
 	若D < newLine->len,则光标移动到新行的D位置;
 
-	注：newLine 新行，Line* 型，是指相对本行已存在的上一行或下一行,不是新创建的一行
+	注：newLine 新行，line 型，是指相对本行已存在的上一行或下一行,不是新创建的一行
 
 ~若自己实现复制粘贴，则需要新的Article
 */
@@ -43,13 +44,13 @@ private:
 	wchar_t * arr;//数组
 
 public:
-	Line * pre;//上一个Line
-	Line * next;//下一个Line
+	line pre;//上一个Line
+	line next;//下一个Line
 
 
 	Line(int sz = DefaultSize);//创建一个空Line，包括创建指针，申请空间size
 	~Line();//析构一个Line,并连接上下指针
-	Line* NewLine();//在本Line后面新建一个Line
+	line NewLine();//在本Line后面新建一个Line
 
 	int IsFull();//判断Line是否为满
 	int RleaseProcess();//释放gapbuffer为0;
@@ -65,7 +66,7 @@ public:
 
 		int UsertoGap(int);//传入面向user字符的位置，返回在arr中的真实位置
 	int Getsize();//取size (总大小)值
-	
+
 	int GetPoint();//取gstart（目前光标位置）
 	int Gapgsize();//取  gap的宽度;
 
@@ -77,7 +78,7 @@ public:
 
 	int CharWidth();//字符长度
 	int CharWidth(int i) const;//i=1 右侧，i=-1 左侧
-	
+
 	int IsEmpty(int i) const;	//判断Line是否为空 ，i可为LF，RG
 	int IsEmpty();			//判断Line是否为空
 
@@ -86,11 +87,11 @@ public:
 	void Push(const wchar_t c,int i);//插入一个字符 LF,插左，RG插右
 	void Insert(const wchar_t * &cc);//插入字符串
 	wchar_t Pop(int p);//删除一个字符，p=1删除光标后面的相当于del , p=-1删除光标前面的相当于backspace。
-	
+
 	void Delete();//删除标记mark到光标gstart.mark标记在第mark字符的右侧，mark+1的左侧。
 	void Rwrite(const wchar_t &c);//替换输入下一字符
 	void Rwrite(const wchar_t * &cc);//替换输入一串字符
-	
+
 	bool IsFirstL() { return this->pre->pre == nullptr; }
 	bool IsLastL() { return this->next->next == nullptr; }
 
@@ -102,25 +103,26 @@ public:
 
 class Article {
 private:
-	Line * firstL;
-	Line * lastL;
+	line firstL;
+	line lastL;
 	int lineNum;
 public:
-	Line * L;//目前正操作的Line头
+	line L;//目前正操作的Line头
 
 	position point;
 	position mark;
-	Article();//构造 Line *head的next为空
+	Article();//构造 linehead的next为空
 	~Article();
 
 	bool IsEmpty() const { return firstL->next == nullptr; }
-	bool IsFirstL(Line * L) const { return L->pre == firstL; }
-	bool IsLastL(Line * L) const { return L->next == lastL; }
+	bool IsFirstL(line L) const { return L->pre == firstL; }
+	bool IsLastL(line L) const { return L->next == lastL; }
 
-	Line * GetLine(int lineNum) const;
+	line GetLine(int lineNum) const;
+	int MaxWidth(void) const;
 
-	void InsertAfter(Line *L);
-	void Remove(Line*&L);
+	void InsertAfter(line L);
+	void Remove(line &L);
 
 	int LineNum(void) const { return lineNum; }
 	void IncLineN(void) { lineNum++; }

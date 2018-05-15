@@ -1,6 +1,5 @@
 #include "stdafx.h"
 
-
 Article::Article()
 {
 	L = new Line;
@@ -16,18 +15,20 @@ Article::Article()
 	L->pre = firstL;
 	lineNum = 1;
 }
+
 Article::~Article()
 {
-	Line * p = firstL->next;
+	line  p = firstL->next;
 	while (p != lastL) {
 		Remove(p);
 		p = firstL->next;
 	}
 }
-Line * Article::GetLine(int lineNum) const
+
+line Article::GetLine(int lineNum) const
 {
 
-	Line * p = firstL->next;
+	line p = firstL->next;
 	int j = 0;
 	while (p != lastL && j != lineNum) {
 		p = p->next;
@@ -37,15 +38,17 @@ Line * Article::GetLine(int lineNum) const
 		return nullptr;
 	return p;
 }
-void Article::InsertAfter(Line *L)
+
+void Article::InsertAfter(line L)
 {
-	Line * newL = new Line;
+	line newL = new Line;
 	newL->pre = L;
 	newL->next = L->next;
 	L->next->pre = newL;
 	L->next = newL;
 }
-void Article::Remove(Line *&L)
+
+void Article::Remove(line&L)
 {
 	L->pre->next = L->next;
 	L->next->pre = L->pre;
@@ -53,7 +56,17 @@ void Article::Remove(Line *&L)
 	this->lineNum--;
 }
 
-
+int Article::MaxWidth(void) const
+{
+	int Max = -1;
+	int a;
+	for (line L = this->firstL->next; L != this->lastL; L = L->next) {
+		a = L->CharWidth();
+		if (a > Max)
+			Max = a;
+	}
+	return Max;
+}
 
 Line::Line(int sz)
 {
@@ -70,10 +83,6 @@ Line::Line(int sz)
 
 }
 
-
-
-
-
 /*析构一个Line,并连接上下指针*/
 Line::~Line()
 {
@@ -83,16 +92,13 @@ Line::~Line()
 }
 
 
-
 /*判断Line是否为满*/
-
 int Line::IsFull()
 {
 	return gstart == gend;
 }
 
 /*判断Line是否为空*/
-
 int Line::IsEmpty()
 {
 	return gstart == 0 && gend == size;
@@ -105,12 +111,10 @@ int Line::IsEmpty(int i) const
 	return gend == size;
 }
 
-
 /*在本Line后面新建一个Line，用在检测回车上。ps:若newLine时执行savespace函数*/
-
-Line * Line::NewLine()
+line  Line::NewLine()
 {
-	Line * l = new Line;
+	line  l = new Line;
 	l->next = this->next;
 	l->pre = this;
 	this->next->pre = l;
@@ -119,9 +123,7 @@ Line * Line::NewLine()
 	return l;
 }
 
-
 /*释放gapbuffer为0;*/
-
 int Line::RleaseProcess()
 {
 	delete[]arr;
@@ -130,7 +132,6 @@ int Line::RleaseProcess()
 }
 
 /*用于满后申请数组*/
-
 void Line::OverflowProcess()
 {
 	int newSize = size + GapIncrement;
@@ -159,7 +160,6 @@ void Line::OverflowProcess()
 /*为正，光标往行尾移动p位。为负，光标往行首移动p位。
 PointMove(1) 跟 LeftMovePoint 等价
 */
-
 int Line::PointMove(int p)
 {
 	if (p > 0) {
@@ -195,16 +195,13 @@ int Line::PointMove(int p)
 }
 
 /*将光标移动到第d个字符*/
-
 void Line::PointMoveto(int d)
 {
 	d = d - gstart;
 	PointMove(d);
 }
 
-
 /*改变point后移动gap*/
-
 int Line::Gapmove()
 {
 	/*将后半的数据拷贝与前半合并*/
@@ -216,15 +213,12 @@ int Line::Gapmove()
 	return 1;//成功移动
 }
 
-
-
-
 /*取len 有效字符长度（用户眼中字符长度）*/
-
 int Line::Getlen()
 {
 	return len;
 }
+
 int Line::Getlen(int i) const
 {
 	if (i == LF)
@@ -242,40 +236,35 @@ int Line::Getsize()
 }
 
 /*传入面向user字符(有效字符)的位置(index)，返回在arr中的真实位置*/
-int Line::UsertoGap(int x) {
+int Line::UsertoGap(int x)
+{
 	if (x < 0 || x >= size) return -1;//error,x不合法
 	if (x < gstart) return x;
 	else return x + Line::Gapgsize();
 }
 
 /*取gs（目前光标位置）*/
-
 int Line::GetPoint()
 {
 	return gstart;
 }
 
 /*取gap的宽度*/
-
 int Line::Gapgsize()
 {
 	return gend - gstart;
 }
 
 /*LF, 光标前一字符位置 ，RG ， 光标后一个字符位置*/
-
-
-wchar_t * Line::GetPos(int i) 
+wchar_t * Line::GetPos(int i)
 {
 	if (i == LF) {
 		return arr;
 	}
 	else return arr + gend;
-
 }
 
 /* 插入一个字符*/
-
 void Line::Push(const wchar_t c, int i)
 {
 	if (IsFull() == 1) {
@@ -306,7 +295,6 @@ void Line::Insert(const wchar_t * &cc)
 }
 
 /* 得到光标左侧元素*/
-
 wchar_t Line::Top(int i)
 {
 	if (i == LF && !IsEmpty(LF))
@@ -318,7 +306,6 @@ wchar_t Line::Top(int i)
 
 
 /*删除一个字符*/
-
 wchar_t Line::Pop(int p)
 {
 	if (p == -1) {
@@ -326,7 +313,6 @@ wchar_t Line::Pop(int p)
 		{
 			/*合并本段与上一段*/
 			return NULL;
-
 		}
 		else {
 			len--;
@@ -350,7 +336,6 @@ wchar_t Line::Pop(int p)
 }
 
 /*删除标记mark到光标gstart.mark标记在第mark字符的右侧，mark+1的左侧。*/
-
 void Line::Delete()
 {
 	if (gstart <= mark) {
@@ -363,13 +348,13 @@ void Line::Delete()
 	}
 }
 
-
 /*替换输入下一字符*/
 void Line::Rwrite(const wchar_t &c)
 {
 	arr[gstart++] = c;
 	gend++;
 }
+
 /*替换输入一串字符*/
 void Line::Rwrite(const wchar_t * &cc)
 {
@@ -399,14 +384,12 @@ int Line::CharWidth()
 		else width += 1;
 	}
 	return width;
-
 }
+
 int Line:: CharWidth(int d) const
 {
-	
 
 	int width = 0;
-
 
 	if (d == LF) {
 		for (int i = gstart - 1; i >= 0; i--) {

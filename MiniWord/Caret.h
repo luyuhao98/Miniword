@@ -9,17 +9,17 @@ public:
 	Caret(int x = 0, int y = 0);
 	~Caret() {};
 
-	void MvRight		(Line *L);
-	void MvLeft		(Line *L);
-	void MvUp		(Line *L);
-	void MvDown		(Line *L);
-	void MvHome		(Line *L);
-	void MvEnd		(Line *L);
-	void MvPrior	(Line *L);
-	void MvNext		(Line *L);
+	void MvRight		(line L);
+	void MvLeft		(line L);
+	void MvUp		(line L);
+	void MvDown		(line L);
+	void MvHome		(line L);
+	void MvEnd		(line L);
+	void MvPrior	(line L);
+	void MvNext		(line L);
 
-	wchar_t CtrDelete	(Line *L);
-	void CtrEnter	(Line *L);
-	void CtrCaretMv	(Line *L, int X, int Y);
-	void CtrDelLine	(Line *L);
+	wchar_t CtrDelete	(line L);
+	void CtrEnter	(line L);
+	void CtrCaretMv	(line L, int X, int Y);
+	void CtrDelLine	(line L);
 };

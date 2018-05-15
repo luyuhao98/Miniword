@@ -6,7 +6,7 @@ Caret::Caret(int x, int y)
 	CaretPosY = y;
 }
 
-void Caret::MvLeft(Line * L)
+void Caret::MvLeft(line L)
 {
 	if ( !L->IsEmpty(LF) ) {
 		if (0x4E00 <= L->Top(LF) && L->Top(LF) <= 0x9FBB) {
@@ -25,7 +25,7 @@ void Caret::MvLeft(Line * L)
 	}
 }
 
-void Caret::MvRight(Line * L)
+void Caret::MvRight(line L)
 {
 	if (!L->IsEmpty(RG)) {
 		if (0x4E00 <= L->Top(RG) && L->Top(RG) <= 0x9FBB) {
@@ -47,7 +47,7 @@ void Caret::MvRight(Line * L)
 	}
 }
 
-void Caret::MvUp(Line *L)
+void Caret::MvUp(line L)
 {
 	if (!L->IsFirstL()) {
 		L->Gapmove();
@@ -67,7 +67,7 @@ void Caret::MvUp(Line *L)
 	}
 }
 
-void Caret::MvDown(Line * L)
+void Caret::MvDown(line L)
 {
 	if (!L->IsLastL()) {
 		L->Gapmove();
@@ -94,7 +94,7 @@ void Caret::MvHome(Line  *L)
 	L->PointMoveto(0);
 }
 
-void Caret::MvEnd(Line * L)
+void Caret::MvEnd(line L)
 {
 	L->Gapmove();
 	while (!L->IsLastL()) {
@@ -105,7 +105,7 @@ void Caret::MvEnd(Line * L)
 	L->Gapmove();
 }
 
-wchar_t Caret::CtrDelete(Line *L)
+wchar_t Caret::CtrDelete(line L)
 {
 	if (!L->IsEmpty(RG)) {
 		wchar_t x = L->Pop(RG);
@@ -114,11 +114,11 @@ wchar_t Caret::CtrDelete(Line *L)
 	return 0;
 }
 
-void Caret::CtrEnter(Line * L)
+void Caret::CtrEnter(line L)
 {
 
 
-	Line * newL = L->NewLine();
+	line newL = L->NewLine();
 
 	while (!L->IsEmpty(RG)) {
 		newL->Push(L->Pop(RG),LF);
