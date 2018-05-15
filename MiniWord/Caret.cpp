@@ -57,7 +57,7 @@ void Caret::MvUp(Line *L)
 		}
 		else {
 			while (L->pre->CharWidth(LF) > CaretPosX)
-				L->pre->PointMove(-1); 
+				L->pre->PointMove(-1);
 			CaretPosX = L->pre->CharWidth(LF);
 		}
 	}
