@@ -1,14 +1,66 @@
 #include "stdafx.h"
 
-/*创建一个空piece，包括创建指针，申请空间size*/
 
-piece::piece(int sz)
+Article::Article()
+{
+	L = new Line;
+	firstL = new Line;
+	lastL = new Line;
+
+	firstL->pre = nullptr;
+	lastL->next = nullptr;
+
+	firstL->next = L;
+	lastL->pre = L;
+	L->next = lastL;
+	L->pre = firstL;
+	lineNum = 1;
+}
+Article::~Article()
+{
+	Line * p = firstL->next;
+	while (p != lastL) {
+		Remove(p);
+		p = firstL->next;
+	}
+}
+Line * Article::GetLine(int lineNum) const
+{
+
+	Line * p = firstL->next;
+	int j = 0;
+	while (p != lastL && j != lineNum) {
+		p = p->next;
+		j++;
+	}
+	if (p == lastL)
+		return nullptr;
+	return p;
+}
+void Article::InsertAfter(Line *L)
+{
+	Line * newL = new Line;
+	newL->pre = L;
+	newL->next = L->next;
+	L->next->pre = newL;
+	L->next = newL;
+}
+void Article::Remove(Line *&L)
+{
+	L->pre->next = L->next;
+	L->next->pre = L->pre;
+	delete(L);
+	this->lineNum--;
+}
+
+
+
+Line::Line(int sz)
 {
 	if (sz < 0)
 		return;
 	size = sz;
 	len = 0;
-	IsPoint = 1;//新建一段时光标就在这一行行首
 	mark = -1;
 	gstart = 0;//gstart 默认指向将要输入字符的位置,即gap的第一个位置
 	gend = size;//gend 默认指向右侧buffer第一个字符的位置，数组下标从0到size-1, gend=size表示右侧没有字符。
@@ -17,47 +69,60 @@ piece::piece(int sz)
 	if (arr == NULL) exit(0);//申请空间失败
 
 }
-/*析构一个piece,并连接上下指针*/
-piece::~piece()
+
+
+
+
+
+/*析构一个Line,并连接上下指针*/
+Line::~Line()
 {
 	pre->next = next;
 	next->pre = pre;
-	delete this;
+	delete[]arr;
 }
 
-/*判断piece是否为满*/
 
-int piece::IsFull()
+
+/*判断Line是否为满*/
+
+int Line::IsFull()
 {
 	return gstart == gend;
 }
 
-/*判断piece是否为空*/
+/*判断Line是否为空*/
 
-int piece :: IsEmpty()
+int Line::IsEmpty()
 {
 	return gstart == 0 && gend == size;
 }
 
+int Line::IsEmpty(int i) const
+{
+	if (i == LF)
+		return gstart == 0;
+	return gend == size;
+}
 
-///*在本piece后面新建一个piece，用在检测回车上。ps:若newpiece时执行savespace函数*/
-//
-//piece * piece::Newpiece()
-//{
-//	return;
-//}
-//
-///*不再操作本piece（newpiece或者point移出本行）时执行，若piece为空，释放数组。若gap>400，整理gap至400。*/
-//
-//int piece::Savespace()
-//{
-//	return;
-//}
-//
+
+/*在本Line后面新建一个Line，用在检测回车上。ps:若newLine时执行savespace函数*/
+
+Line * Line::NewLine()
+{
+	Line * l = new Line;
+	l->next = this->next;
+	l->pre = this;
+	this->next->pre = l;
+	this->next = l;
+
+	return l;
+}
+
 
 /*释放gapbuffer为0;*/
 
-int piece::RleaseProcess()
+int Line::RleaseProcess()
 {
 	delete[]arr;
 	arr = NULL;
@@ -66,7 +131,7 @@ int piece::RleaseProcess()
 
 /*用于满后申请数组*/
 
-void piece::OverflowProcess()
+void Line::OverflowProcess()
 {
 	int newSize = size + GapIncrement;
 
@@ -78,9 +143,9 @@ void piece::OverflowProcess()
 	std::copy: 高效copy函数。
 	Syntax: std::copy(InIt first, InIt last, OutIt x);
 	其中：	fist [IN]: 要拷贝元素的首地址
-		last [IN]:要拷贝元素的最后一个元素的下一个地址
-		last = first + num  其中num为元素个数
-		[OUT] : 拷贝的目的地的首地址
+	last [IN]:要拷贝元素的最后一个元素的下一个地址
+	last = first + num  其中num为元素个数
+	[OUT] : 拷贝的目的地的首地址
 	集成memcpy,memmove。
 	所有数组复制操作请均使用这种方式
 	*/
@@ -92,12 +157,11 @@ void piece::OverflowProcess()
 }
 
 /*为正，光标往行尾移动p位。为负，光标往行首移动p位。
-	PointMove(1) 跟 LeftMovePoint 等价
+PointMove(1) 跟 LeftMovePoint 等价
 */
 
-int piece::PointMove(int p) 
+int Line::PointMove(int p)
 {
-	if (!IsPoint) return 0;
 	if (p > 0) {
 		if (p == 1 && gstart == len)
 		{
@@ -109,10 +173,11 @@ int piece::PointMove(int p)
 		else {
 			std::copy(arr + gend, arr + gend + p, arr + gstart);
 			gstart += p;
+			gend += p;
 		}
 	}
 	else {
-		p = - p;
+		p = -p;
 		if (p == 1 && gstart == 0)
 		{
 			//move point to previous line end
@@ -123,6 +188,7 @@ int piece::PointMove(int p)
 		else {
 			std::copy(arr + gstart - p, arr + gstart, arr + gend - p);
 			gstart -= p;
+			gend -= p;
 		}
 	}
 	return 1;
@@ -130,46 +196,23 @@ int piece::PointMove(int p)
 
 /*将光标移动到第d个字符*/
 
-int piece ::PointMoveto(int d)
+void Line::PointMoveto(int d)
 {
 	d = d - gstart;
 	PointMove(d);
 }
-//
-///*不改变原句，光标左移*/
-//
-//int piece::LeftMovePoint() {
-//	/*左移到头，后序可能增加回到上一行行尾功能*/
-//	if (gstart == 0) return 0;
-//
-//	arr[gend] = arr[--gstart];
-//	return 1;//行内左移成功
-//}
-//
-//
-///*不改变原句，光标右移*/
-//
-//int piece::RightMovePoint()
-//{
-//	/*右移到头，后序可能增加进入下一行行头功能*/
-//	if (gstart == len) return 0;
-//
-//	arr[gstart++] = arr[gend++];
-//	return 1;//行内右移成功
-//}
-//
+
 
 /*改变point后移动gap*/
 
-int piece::Gapmove()
+int Line::Gapmove()
 {
-	if (!IsPoint) {
-		/*将后半的数据拷贝与前半合并*/
-		std::copy(arr + gend, arr + size, arr + gstart);
-		gend = size;
-		gstart = len;
-		//piece::Savespace();
-	}
+	/*将后半的数据拷贝与前半合并*/
+	std::copy(arr + gend, arr + size, arr + gstart);
+	gend = size;
+	gstart = len;
+	//Line::Savespace();
+
 	return 1;//成功移动
 }
 
@@ -178,61 +221,78 @@ int piece::Gapmove()
 
 /*取len 有效字符长度（用户眼中字符长度）*/
 
-int piece::Getlen()
+int Line::Getlen()
 {
 	return len;
 }
+int Line::Getlen(int i) const
+{
+	if (i == LF)
+		return gstart;
+	if (i == RG)
+		return len - gstart;
+}
+
 
 
 /*取size(总大小)值*/
-int piece::Getsize()
+int Line::Getsize()
 {
 	return size;
 }
 
 /*传入面向user字符(有效字符)的位置(index)，返回在arr中的真实位置*/
-int piece::UsertoGap(int x) {
+int Line::UsertoGap(int x) {
 	if (x < 0 || x >= size) return -1;//error,x不合法
 	if (x < gstart) return x;
-	else return x + piece::Gapgsize();
+	else return x + Line::Gapgsize();
 }
 
 /*取gs（目前光标位置）*/
 
-int piece::Getgstart()
+int Line::GetPoint()
 {
 	return gstart;
 }
 
 /*取gap的宽度*/
 
-int piece::Gapgsize()
+int Line::Gapgsize()
 {
 	return gend - gstart;
 }
 
-/*取有效字符串*/
-wchar_t * piece::Getstr()
+/*LF, 光标前一字符位置 ，RG ， 光标后一个字符位置*/
+
+
+wchar_t * Line::GetPos(int i) 
 {
-	Gapmove();
-	wchar_t* newarr = new wchar_t[len + 1];
-	std::copy(arr, arr + len, newarr);
-	return newarr;
+	if (i == LF) {
+		return arr;
+	}
+	else return arr + gend;
+
 }
 
-/* point后插入一个字符*/
+/* 插入一个字符*/
 
-void piece::Push(const wchar_t &c)
+void Line::Push(const wchar_t c, int i)
 {
-	if (IsFull() == true) {
+	if (IsFull() == 1) {
 		OverflowProcess();
 	}
-	arr[gstart++] = c;
+
+	if (i == LF) {
+		arr[gstart++] = c;
+	}
+	else {
+		arr[--gend] = c;
+	}
 	len++;
 }
 
 /*插入字符串*/
-void piece::Insert(const wchar_t * &cc)
+void Line::Insert(const wchar_t * &cc)
 {
 	int cclen = wcslen(cc);
 	while (cclen > Gapgsize()) {
@@ -245,42 +305,59 @@ void piece::Insert(const wchar_t * &cc)
 	len += cclen;
 }
 
+/* 得到光标左侧元素*/
+
+wchar_t Line::Top(int i)
+{
+	if (i == LF && !IsEmpty(LF))
+		return arr[gstart - 1];
+	else if (i == RG && !IsEmpty(RG))
+		return arr[gend];
+	return L'\0';
+}
+
+
 /*删除一个字符*/
 
-void piece::Pop(int p)
+wchar_t Line::Pop(int p)
 {
 	if (p == -1) {
 		if (gstart == 0)
 		{
 			/*合并本段与上一段*/
+			return NULL;
+
 		}
 		else {
 			len--;
 			gstart--;
+			return arr[gstart];
 		}
 	}
 	if (p == 1) {
 		if (gstart == len)
 		{
+			return NULL;
 			/*合并本段与下一段*/
 		}
 		else {
 			len--;
 			gend++;
+			return arr[gend - 1];
 		}
 	}
-
+	return NULL;
 }
 
 /*删除标记mark到光标gstart.mark标记在第mark字符的右侧，mark+1的左侧。*/
 
-void piece :: Delete() 
+void Line::Delete()
 {
 	if (gstart <= mark) {
 		len -= mark - gstart;
 		gend += mark - gstart;
 	}
-	else{
+	else {
 		len -= gstart - mark;
 		gstart = mark;
 	}
@@ -288,13 +365,13 @@ void piece :: Delete()
 
 
 /*替换输入下一字符*/
-void piece::Rwrite(const wchar_t &c)
+void Line::Rwrite(const wchar_t &c)
 {
 	arr[gstart++] = c;
 	gend++;
 }
 /*替换输入一串字符*/
-void piece :: Rwrite(const wchar_t * &cc)
+void Line::Rwrite(const wchar_t * &cc)
 {
 	int cclen = wcslen(cc);
 	if (cclen >= len - gstart) {
@@ -305,31 +382,55 @@ void piece :: Rwrite(const wchar_t * &cc)
 	}
 	Insert(cc);
 }
-int Search(const wchar_t * &c, position &m, position &p);//找到所求字符串c的位置，并且起始为mark，结束为point
-int Replace(const wchar_t * &cc, position &m, position &p);//将mark到point处的字符串
 
-/*
-class piece
+int Line::CharWidth()
 {
-private:
-int len;//有效字符数量
-int size;//buffer的总大小(字符数量)
-int IsPoint;//point是否在这行
-int mark;//Mark不在这行为-1，若在这行，mark为其实际位置
-int gstart;//gapstart,gap开始位置，光标位置（光标若在）
-int gend;//gapend,gap结束位置
+	int width = 0;
+	for (int i = gstart - 1; i >= 0; i--) {
+		if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
+			width += 2;
+		}
+		else width += 1;
+	}
+	for (int i = gend; i < size; i++) {
+		if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
+			width += 2;
+		}
+		else width += 1;
+	}
+	return width;
 
-wchar_t * arr;//数组
+}
+int Line:: CharWidth(int d) const
+{
+	
 
-piece * pre;//上一个piece
-piece * nexe;//下一个piece
-
-//	int Pointpos;//point所在的位置
-
-public:
-int Readfile();//从这行读文件 *
-int Writefile(); //用这行写入文件*
+	int width = 0;
 
 
-};
-*/
+	if (d == LF) {
+		for (int i = gstart - 1; i >= 0; i--) {
+			if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
+				width += 2;
+			}
+			else width += 1;
+		}
+	}
+	else {
+		for (int i = gend; i < size; i++) {
+			if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
+				width += 2;
+			}
+			else width += 1;
+		}
+	}
+	return width;
+}
+
+void Line::MakeEmpty()
+{
+	delete[] arr;
+	gstart = 0;
+	gend = size;
+	arr = new wchar_t[size];
+}

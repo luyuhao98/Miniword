@@ -30,13 +30,7 @@
     <ClInclude Include="subeditor.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="LinkedLine.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Caret.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="FileRead.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,13 +44,7 @@
     <ClCompile Include="subeditor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="LinkedLine.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Caret.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="FileRead.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

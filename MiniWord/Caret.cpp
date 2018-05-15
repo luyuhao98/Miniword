@@ -6,142 +6,124 @@ Caret::Caret(int x, int y)
 	CaretPosY = y;
 }
 
-void Caret::MvLeft(Line L)
+void Caret::MvLeft(Line * L)
 {
-	if ( !L->lnBuff.IsEmpty(LF) ) {
-		if (0x4E00 <= L->lnBuff.Top(LF) && L->lnBuff.Top(LF) <= 0x9FBB) {
+	if ( !L->IsEmpty(LF) ) {
+		if (0x4E00 <= L->Top(LF) && L->Top(LF) <= 0x9FBB) {
 			CaretPosX -= 2;
 		}
 		else
 			CaretPosX--;
-		L->lnBuff.LFtoRG();
+		L->PointMove(-1);
 	}
 	else {
 		if (!L->IsFirstL()) {
-			while (!L->lnBuff.IsEmpty(RG)) {
-				L->lnBuff.RGtoLF();
-			}
-			CaretPosX = L->prevL->lnBuff.CharWidth();
+			L->Gapmove();
+			CaretPosX = L->pre->CharWidth();
 			CaretPosY -= 1;
 		}
 	}
 }
 
-void Caret::MvRight(Line L)
+void Caret::MvRight(Line * L)
 {
-	if (!L->lnBuff.IsEmpty(RG)) {
-		if (0x4E00 <= L->lnBuff.Top(RG) && L->lnBuff.Top(RG) <= 0x9FBB) {
+	if (!L->IsEmpty(RG)) {
+		if (0x4E00 <= L->Top(RG) && L->Top(RG) <= 0x9FBB) {
 			CaretPosX += 2;
 		}
 		else
 			CaretPosX++;
-		L->lnBuff.RGtoLF();
+		L->PointMove(1);
 	}
 	else {
 		if (!L->IsLastL()) {
 			CaretPosX = 0;
 			CaretPosY += 1;
-			while (!L->nextL->lnBuff.IsEmpty(LF)) {
-				L->nextL->lnBuff.LFtoRG();
-			}
+			L->next->PointMoveto(0);
+			//while (!L->next->IsEmpty(LF)) {
+			//	L->next->LFtoRG();
+			//}
 		}
 	}
 }
 
-void Caret::MvUp(Line L)
+void Caret::MvUp(Line *L)
 {
 	if (!L->IsFirstL()) {
-		while (!L->lnBuff.IsEmpty(RG))
-			L->lnBuff.RGtoLF();
+		L->Gapmove();
 		CaretPosY--;
-
-		if (CaretPosX > L->prevL->lnBuff.CharWidth()) {
-			CaretPosX = L->prevL->lnBuff.CharWidth();
+		if (CaretPosX > L->pre->CharWidth()) {
+			CaretPosX = L->pre->CharWidth();
 		}
 		else {
-			while (L->prevL->lnBuff.CharWidth(LF) > CaretPosX)
-				L->prevL->lnBuff.LFtoRG();
-			CaretPosX = L->prevL->lnBuff.CharWidth(LF);
+			while (L->pre->CharWidth(LF) > CaretPosX)
+				L->pre->PointMove(-1); 
+			CaretPosX = L->pre->CharWidth(LF);
 		}
 	}
 	else {
-		while (!L->lnBuff.IsEmpty(LF))
-			L->lnBuff.LFtoRG();
+		L->PointMoveto(0);
 		CaretPosX = 0;
 	}
 }
 
-void Caret::MvDown(Line L)
+void Caret::MvDown(Line * L)
 {
 	if (!L->IsLastL()) {
-		while (!L->lnBuff.IsEmpty(RG))
-			L->lnBuff.RGtoLF();
+		L->Gapmove();
 		CaretPosY++;
 
-		while (L->nextL->lnBuff.CharWidth(LF) > CaretPosX)
-			L->nextL->lnBuff.LFtoRG();
-		CaretPosX = L->nextL->lnBuff.CharWidth(LF);
+		while (L->next->CharWidth(LF) > CaretPosX)
+			L->next->PointMove(-1);
+		CaretPosX = L->next->CharWidth(LF);
 	}
 	else {
-		while (!L->lnBuff.IsEmpty(RG))
-			L->lnBuff.RGtoLF();
-		CaretPosX = L->lnBuff.CharWidth();
+		L->Gapmove();
+		CaretPosX = L->CharWidth();
 	}
 }
 
-void Caret::MvHome(Line L)
+void Caret::MvHome(Line  *L)
 {
-	while (!L->lnBuff.IsEmpty(RG)) {
-		L->lnBuff.RGtoLF();
-	}
+	L->Gapmove();
 	while (!L->IsFirstL()) {
-		L = L->prevL;
+		L = L->pre;
 	}
 	CaretPosX = 0;
 	CaretPosY = 0;
-	while (!L->lnBuff.IsEmpty(LF)) {
-		L->lnBuff.LFtoRG();
-	}
+	L->PointMoveto(0);
 }
 
-void Caret::MvEnd(Line L)
+void Caret::MvEnd(Line * L)
 {
-	while (!L->lnBuff.IsEmpty(RG)) {
-		L->lnBuff.RGtoLF();
-	}
+	L->Gapmove();
 	while (!L->IsLastL()) {
-		L = L->nextL;
+		L = L->next;
 		CaretPosY++;
 	}
-	CaretPosX = L->lnBuff.CharWidth();
-	while (!L->lnBuff.IsEmpty(RG)) {
-		L->lnBuff.RGtoLF();
-	}
+	CaretPosX = L->CharWidth();
+	L->Gapmove();
 }
 
-wchar_t Caret::CtrDelete(Line L)
+wchar_t Caret::CtrDelete(Line *L)
 {
-	if (!L->lnBuff.IsEmpty(RG)) {
-		wchar_t x = L->lnBuff.PopandTop(RG);
+	if (!L->IsEmpty(RG)) {
+		wchar_t x = L->Pop(RG);
 		return x;
 	}
 	return 0;
 }
 
-void Caret::CtrEnter(Line L)
+void Caret::CtrEnter(Line * L)
 {
-	Line newL = new struct Node;
 
-	L->NewLine(newL);
 
-	while (!L->lnBuff.IsEmpty(RG)) {
-		newL->lnBuff.Push(L->lnBuff.PopandTop(RG), LF);
+	Line * newL = L->NewLine();
+
+	while (!L->IsEmpty(RG)) {
+		newL->Push(L->Pop(RG),LF);
 	}
-
-	while (!newL->lnBuff.IsEmpty(LF)) {
-		newL->lnBuff.LFtoRG();
-	}
-
+	newL->PointMoveto(0);
 	CaretPosX = 0;
 	CaretPosY++;
 }

@@ -1,4 +1,4 @@
-#include "LinkedLine.h"
+#include"subeditor.h"
 #include "FileRead.h"
 #include "stdafx.h"
 #include <fstream>
