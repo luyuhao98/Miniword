@@ -78,7 +78,10 @@ Line::Line(int sz)
 	gstart = 0;//gstart 默认指向将要输入字符的位置,即gap的第一个位置
 	gend = size;//gend 默认指向右侧buffer第一个字符的位置，数组下标从0到size-1, gend=size表示右侧没有字符。
 	arr = NULL;
-	arr = new wchar_t[size];
+
+	arr = new wchar_t[sz+1];
+	arr[sz] = L'\0';//尾巴多留一位，保持L'\0'结尾，可以使用wcsncpy
+	
 	if (arr == NULL) exit(0);//申请空间失败
 
 }
@@ -134,27 +137,22 @@ int Line::RleaseProcess()
 /*用于满后申请数组*/
 void Line::OverflowProcess()
 {
-	int newSize = size + GapIncrement;
+	size += GapIncrement;
 
 	wchar_t * newarr = NULL;
-	newarr = new wchar_t[newSize];
-	if (newarr = NULL) exit(0);
+	
+	newarr = new wchar_t[size + 1];
+	newarr[size] = L'\0';//保持多一位L'\0'
 
-	/*
-	std::copy: 高效copy函数。
-	Syntax: std::copy(InIt first, InIt last, OutIt x);
-	其中：	fist [IN]: 要拷贝元素的首地址
-	last [IN]:要拷贝元素的最后一个元素的下一个地址
-	last = first + num  其中num为元素个数
-	[OUT] : 拷贝的目的地的首地址
-	集成memcpy,memmove。
-	所有数组复制操作请均使用这种方式
-	*/
-	std::copy(arr, arr + gstart, newarr);//拷贝前半段
-	std::copy(arr + gend, arr + size, newarr + gend + GapIncrement);//拷贝后半段
+	if (newarr == NULL) exit(0);
+
+	wcsncpy(newarr, arr, gstart);
+	wcsncpy(newarr + gend + GapIncrement, arr + gend, len-gend);
+
 	delete[] arr;
 	arr = newarr;
 	gend += GapIncrement;
+
 }
 
 /*为正，光标往行尾移动p位。为负，光标往行首移动p位。
@@ -171,7 +169,7 @@ int Line::PointMove(int p)
 		if (p > len - gstart)
 			return 0;
 		else {
-			std::copy(arr + gend, arr + gend + p, arr + gstart);
+			wcsncpy(arr + gstart, arr + gend, p);
 			gstart += p;
 			gend += p;
 		}
@@ -186,7 +184,7 @@ int Line::PointMove(int p)
 		if (p > gstart)
 			return 0;
 		else {
-			std::copy(arr + gstart - p, arr + gstart, arr + gend - p);
+			wcsncpy(arr + gend - p, arr + gstart - p, p);
 			gstart -= p;
 			gend -= p;
 		}
@@ -205,7 +203,7 @@ void Line::PointMoveto(int d)
 int Line::Gapmove()
 {
 	/*将后半的数据拷贝与前半合并*/
-	std::copy(arr + gend, arr + size, arr + gstart);
+	wcsncpy(arr + gstart, arr + gend, size - gend);
 	gend = size;
 	gstart = len;
 	//Line::Savespace();
@@ -289,7 +287,8 @@ void Line::Insert(const wchar_t * &cc)
 		cclen -= Gapgsize();
 	}
 	cclen = wcslen(cc);
-	std::copy(cc, cc + cclen, arr + gstart);
+	
+	wcsncpy(arr + gstart, cc, cclen);
 	PointMove(cclen);
 	len += cclen;
 }
