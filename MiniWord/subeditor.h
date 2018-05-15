@@ -31,7 +31,7 @@ class position {
 ~若自己实现复制粘贴，则需要新的Article
 */
 
-class Line
+typedef class Line
 {
 private:
 	int len;//有效字符数量
@@ -97,7 +97,7 @@ public:
 	//	int Savespace();//不再操作本Line（newLine或者point移出本行）时执行，若Line为空，释放数组。若gap>400，整理gap至400。
 	//int Readfile();//从这行读文件 * ///
 	//int Writefile(); //用这行写入文件* ///
-};
+} * line;
 
 
 class Article {
