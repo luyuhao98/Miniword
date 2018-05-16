@@ -64,7 +64,7 @@ public:
 	//PointMove( 1 )		int RightMovePoint();//不改变原句，光标右移
 	int Gapmove();//改变point后移动gap
 
-		int UsertoGap(int);//传入面向user字符的位置，返回在arr中的真实位置
+	int UsertoGap(int);//传入面向user字符的位置，返回在arr中的真实位置
 	int Getsize();//取size (总大小)值
 
 	int GetPoint();//取gstart（目前光标位置）
@@ -75,13 +75,12 @@ public:
 	int Getlen();//取len 有效字符长度（用户眼中字符长度）
 	int Getlen(int i) const;//取len 有效字符长度（用户眼中字符长度）
 
-
 	int CharWidth();//字符长度
 	int CharWidth(int i) const;//i=1 右侧，i=-1 左侧
 
 	int IsEmpty(int i) const;	//判断Line是否为空 ，i可为LF，RG
 	int IsEmpty();			//判断Line是否为空
-
+	char * curContent();
 
 	wchar_t Top(int i);//LG得到左侧元素 RG得到右侧元素
 	void Push(const wchar_t c,int i);//插入一个字符 LF,插左，RG插右

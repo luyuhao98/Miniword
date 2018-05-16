@@ -281,7 +281,7 @@ void Line::Push(const wchar_t c, int i)
 /*²åÈë×Ö·û´®*/
 void Line::Insert(const wchar_t * &cc)
 {
-	int cclen = wcslen(cc);
+	size_t cclen = wcslen(cc);
 	while (cclen > Gapgsize()) {
 		OverflowProcess();
 		cclen -= Gapgsize();
@@ -365,6 +365,20 @@ void Line::Rwrite(const wchar_t * &cc)
 		gend += cclen;
 	}
 	Insert(cc);
+}
+
+char * Line::curContent() {
+
+	char * str = new char[len+1];
+	int index = 0;
+	
+	for (int i = 0; i < gstart; i++) {
+		str[index++] = arr[i];
+	}
+	for (int i = gend; i < size; i++) {
+		str[index++] = arr[i];
+	}
+	return str;
 }
 
 int Line::CharWidth()

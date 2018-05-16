@@ -152,6 +152,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Caret.h" />
+    <ClInclude Include="FileOutput.h" />
+    <ClInclude Include="FileRead.h" />
     <ClInclude Include="MiniWord.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -160,6 +162,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Caret.cpp" />
+    <ClCompile Include="FileOutput.cpp" />
+    <ClCompile Include="FileRead.cpp" />
     <ClCompile Include="MiniWord.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
