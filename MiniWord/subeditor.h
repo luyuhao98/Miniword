@@ -125,5 +125,6 @@ public:
 
 	int LineNum(void) const { return lineNum; }
 	void IncLineN(void) { lineNum++; }
+	void clearWord(); //Çå¿Õµ±Ç°Article
 
 };

@@ -48,7 +48,7 @@ void Article::InsertAfter(line L)
 	L->next = newL;
 }
 
-void Article::Remove(line&L)
+void Article::Remove(line & L)
 {
 	L->pre->next = L->next;
 	L->next->pre = L->pre;
@@ -66,6 +66,19 @@ int Article::MaxWidth(void) const
 			Max = a;
 	}
 	return Max;
+}
+
+void Article::clearWord() {
+
+	line curL = GetLine(0);
+	line nextL;
+
+	while (!IsLastL(curL)) {
+		nextL = curL->next;
+		Remove(curL);
+		curL = nextL;
+	}
+
 }
 
 Line::Line(int sz)

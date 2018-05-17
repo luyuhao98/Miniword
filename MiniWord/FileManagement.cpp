@@ -1,5 +1,4 @@
 #include "subeditor.h"
-#include "FileRead.h"
 #include "stdafx.h"
 #include <fstream>
 #include <iostream>
@@ -8,7 +7,7 @@ using namespace std;
 
 const int MAXL = 500; //单行字符串长度
 
-void FileRead(Article & Ar, wchar_t * Address)
+void openNewFile(Article & Ar, wchar_t * Address) //打开新文件
 {
 	wifstream inFile;
 	inFile.open(Address); //打开文件并写入数据结构
@@ -32,3 +31,27 @@ void FileRead(Article & Ar, wchar_t * Address)
 	inFile.close();
 }
 
+void saveFile(Article & Ar, wchar_t * Address) { //保存文件
+
+	wofstream outFile(Address);
+	if (!outFile) return;
+
+	line curL = Ar.GetLine(0);
+	wchar_t * str;
+
+	while (!curL->IsLastL()) {
+		str = curL->curContent();
+		outFile << str;
+		curL = curL->next;
+	}
+	InvalidateRect(hWnd, NULL, TRUE);
+}
+
+void createNewFile(Article & Ar, wchar_t * address) { //新建文件
+
+	wofstream outfile(address);
+	if (!outfile) return;
+
+	Ar.clearWord();
+	InvalidateRect(hWnd, NULL, TRUE);
+}
