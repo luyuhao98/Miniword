@@ -380,16 +380,15 @@ void Line::Rwrite(const wchar_t * &cc)
 	Insert(cc);
 }
 
-wchar_t * Line::curContent() {
+std::wstring Line::curContent() {
 
-	wchar_t * str = new wchar_t [len+1];
-	int index = 0;
+	std::wstring str;
 	
 	for (int i = 0; i < gstart; i++) {
-		str[index++] = arr[i];
+		str += arr[i];
 	}
 	for (int i = gend; i < size; i++) {
-		str[index++] = arr[i];
+		str += arr[i];
 	}
 	return str;
 }
