@@ -367,9 +367,9 @@ void Line::Rwrite(const wchar_t * &cc)
 	Insert(cc);
 }
 
-char * Line::curContent() {
+wchar_t * Line::curContent() {
 
-	char * str = new char[len+1];
+	wchar_t * str = new wchar_t [len+1];
 	int index = 0;
 	
 	for (int i = 0; i < gstart; i++) {

@@ -10,7 +10,7 @@ const int MAXL = 500; //单行字符串长度
 
 void FileRead(Article & Ar, wchar_t * Address)
 {
-	ifstream inFile;
+	wifstream inFile;
 	inFile.open(Address); //打开文件并写入数据结构
 	if (!inFile.is_open()) return;
 

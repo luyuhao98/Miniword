@@ -80,7 +80,7 @@ public:
 
 	int IsEmpty(int i) const;	//判断Line是否为空 ，i可为LF，RG
 	int IsEmpty();			//判断Line是否为空
-	char * curContent();
+	wchar_t * curContent();
 
 	wchar_t Top(int i);//LG得到左侧元素 RG得到右侧元素
 	void Push(const wchar_t c,int i);//插入一个字符 LF,插左，RG插右

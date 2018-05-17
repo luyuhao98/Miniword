@@ -6,13 +6,13 @@
 
 using namespace std;
 
-void FileOutput(Article & Ar, char * Address) {
+void FileOutput(Article & Ar, wchar_t * Address) {
 
-	ofstream outFile(Address);
+	wofstream outFile(Address);
 	if (!outFile) return;
 
 	line curL = Ar.GetLine(0);
-	char * str;
+	wchar_t * str;
 
 	while (!curL->IsLastL()) {
 		str = curL->curContent();
