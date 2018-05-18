@@ -25,6 +25,14 @@ Article::~Article()
 	}
 }
 
+bool Article::IsEmpty() const {
+	if (firstL->next->next == lastL) {
+		line curL = firstL->next;
+		if (curL->Getlen() == 0) return true;
+	}
+	return false;
+}
+
 line Article::GetLine(int lineNum) const
 {
 
