@@ -83,7 +83,7 @@ void Caret::MvDown(line L)
 	}
 }
 
-void Caret::MvHome(Line  *L)
+void Caret::MvHome(line L)
 {
 	L->Gapmove();
 	while (!L->IsFirstL()) {

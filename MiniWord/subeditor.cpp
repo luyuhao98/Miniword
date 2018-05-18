@@ -53,7 +53,7 @@ void Article::Remove(line & L)
 	L->pre->next = L->next;
 	L->next->pre = L->pre;
 	delete(L);
-	this->lineNum--;
+	lineNum--;
 }
 
 int Article::MaxWidth(void) const
@@ -70,7 +70,9 @@ int Article::MaxWidth(void) const
 
 void Article::clearWord() {
 
-	line curL = GetLine(0);
+	line curL = firstL -> next;
+	curL->MakeEmpty();
+	curL = curL-> next;
 	line nextL;
 
 	while (!IsLastL(curL)) {
@@ -78,7 +80,7 @@ void Article::clearWord() {
 		Remove(curL);
 		curL = nextL;
 	}
-
+	lineNum = 1;
 }
 
 Line::Line(int sz)
@@ -438,7 +440,10 @@ int Line:: CharWidth(int d) const
 void Line::MakeEmpty()
 {
 	delete[] arr;
+	len = 0;
+	mark = -1;
 	gstart = 0;
 	gend = size;
-	arr = new wchar_t[size];
+	arr = new wchar_t[size+1];
+	arr[size] = L'\0';
 }
