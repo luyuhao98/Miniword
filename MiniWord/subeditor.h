@@ -34,16 +34,15 @@ class position {
 
 typedef class Line
 {
-private:
+public:
 	int len;//有效字符数量
 	int size;//Article的总大小(字符数量)
 	int mark;//Mark不在这行为-1，若在这行，mark为其实际位置
 	int gstart;//gapstart,gap开始位置，光标位置（光标若在）
 	int gend;//gapend,gap结束位置
-
 	wchar_t * arr;//数组
 
-public:
+
 	line pre;//上一个Line
 	line next;//下一个Line
 
@@ -54,7 +53,6 @@ public:
 
 	int IsFull();//判断Line是否为满
 	int RleaseProcess();//释放gapbuffer为0;
-	void MakeEmpty();//清空内容
 	void OverflowProcess(); //用于满了后申请数组
 
 
@@ -65,31 +63,36 @@ public:
 	int Gapmove();//改变point后移动gap
 
 	int UsertoGap(int);//传入面向user字符的位置，返回在arr中的真实位置
-	int Getsize();//取size (总大小)值
-
+	
+	int Gapgsize();//取gap的宽度;
 	int GetPoint();//取gstart（目前光标位置）
-	int Gapgsize();//取  gap的宽度;
-
-	wchar_t * GetPos(int i);//LF, 段首第一个字 ，RG ， 光标后一个字符位置
-
+	int GetGend();//取gend;
+	int Getsize();//取size (总大小)值
 	int Getlen();//取len 有效字符长度（用户眼中字符长度）
 	int Getlen(int i) const;//取len 有效字符长度（用户眼中字符长度）
+	wchar_t * GetPos();//返回该行字符串
+	wchar_t * GetPos(int i);//返回左右字符串 LF, return arr ，RG ， return arr+gend
 
 	int CharWidth();//字符长度
 	int CharWidth(int i) const;//i=1 右侧，i=-1 左侧
 
 	int IsEmpty(int i) const;	//判断Line是否为空 ，i可为LF，RG
 	int IsEmpty();			//判断Line是否为空
-    std::wstring curContent();
+	
+
+	void MakeEmpty();//清空内容
+	void MakeEmpty(int i);//清空内容 清空左右内容
 
 	wchar_t Top(int i);//LG得到左侧元素 RG得到右侧元素
 	void Push(const wchar_t c,int i);//插入一个字符 LF,插左，RG插右
-	void Insert(const wchar_t * &cc);//插入字符串
+	
+	line Insert(wchar_t * &cc);//插入字符串，返回插入字符串后当前行
+	
 	wchar_t Pop(int p);//删除一个字符，p=1删除光标后面的相当于del , p=-1删除光标前面的相当于backspace。
 
 	void Delete();//删除标记mark到光标gstart.mark标记在第mark字符的右侧，mark+1的左侧。
 	void Rwrite(const wchar_t &c);//替换输入下一字符
-	void Rwrite(const wchar_t * &cc);//替换输入一串字符
+	void Rwrite(wchar_t * &cc);//替换输入一串字符
 
 	bool IsFirstL() { return this->pre->pre == nullptr; }
 	bool IsLastL() { return this->next->next == nullptr; }
@@ -116,8 +119,10 @@ public:
 	bool IsEmpty() const;
 	bool IsFirstL(line L) const { return L->pre == firstL; }
 	bool IsLastL(line L) const { return L->next == lastL; }
-
+	bool IsEnd(line L) const { return L == lastL; }
+	
 	line GetLine(int lineNum) const;
+	int GetNum(line l) const;
 	int MaxWidth(void) const;
 
 	void InsertAfter(line L);

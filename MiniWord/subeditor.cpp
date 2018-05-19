@@ -46,6 +46,20 @@ line Article::GetLine(int lineNum) const
 		return nullptr;
 	return p;
 }
+/*给line返回行号，注意，如果没找到这一行，则返回-1 */
+int Article::GetNum(line l) const 
+{
+	int i = 0;
+	line lstart = this->firstL->next;
+	while (l != lstart && !IsEnd(lstart))
+	{
+		i++;
+		lstart = lstart->next;
+	}
+	if (IsEnd(lstart)) return -1;
+	return i;
+}
+
 
 void Article::InsertAfter(line L)
 {
@@ -103,7 +117,8 @@ Line::Line(int sz)
 	arr = NULL;
 
 	arr = new wchar_t[sz+1];
-	arr[sz] = L'\0';//尾巴多留一位，保持L'\0'结尾，可以使用wcsncpy
+
+	memset(arr, 0, sizeof(wchar_t)*(sz + 1));
 	
 	if (arr == NULL) exit(0);//申请空间失败
 
@@ -165,7 +180,7 @@ void Line::OverflowProcess()
 	wchar_t * newarr = NULL;
 	
 	newarr = new wchar_t[size + 1];
-	newarr[size] = L'\0';//保持多一位L'\0'
+	memset(newarr, 0, sizeof(wchar_t)*(size + 1));
 
 	if (newarr == NULL) exit(0);
 
@@ -275,6 +290,16 @@ int Line::Gapgsize()
 {
 	return gend - gstart;
 }
+int Line::GetGend()//取gend;
+{
+	return gend;
+}
+
+/*返回该行字符串*/
+wchar_t * Line::GetPos()
+{
+	return arr;
+}
 
 /*LF, 光标前一字符位置 ，RG ， 光标后一个字符位置*/
 wchar_t * Line::GetPos(int i)
@@ -302,18 +327,76 @@ void Line::Push(const wchar_t c, int i)
 }
 
 /*插入字符串*/
-void Line::Insert(const wchar_t * &cc)
+/* TMD,windows环境下换行处 是一个\r回车符 和一个\n换行符构成 :\r\n */
+
+line Line::Insert(wchar_t * &cc)
 {
+	line tmpl = this;
 	size_t cclen = wcslen(cc);
-	while (cclen > Gapgsize()) {
-		OverflowProcess();
-		cclen -= Gapgsize();
-	}
-	cclen = wcslen(cc);
 	
-	wcsncpy(arr + gstart, cc, cclen);
-	PointMove(cclen);
-	len += cclen;
+	int counter = 0;
+	int flag = 0;
+
+	for (int i = 0; i < cclen; i++) {
+		if (cc[i] == L'\r') {
+			flag = 1;
+			break;
+		}	
+	}
+	
+	if (!flag) {
+		while (cclen > Gapgsize()) {
+			OverflowProcess();
+			cclen -= Gapgsize();
+		}
+		cclen = wcslen(cc);
+		wcsncpy(arr + gstart, cc, cclen);
+		gstart += cclen;
+		len += cclen;
+	}
+	else {
+		int storelen = Getlen(RG);
+		wchar_t * store = new wchar_t[storelen+ 1];
+		memset(store, 0, sizeof(wchar_t)*(storelen + 1));
+		sizeof(store);/////////////
+		wcsncpy(store, this->GetPos(RG), storelen);
+		
+		MakeEmpty(RG);
+
+		for (int i = 0; i < cclen; i++) {
+			
+			if (cc[i] != L'\r' && i != cclen - 1) {
+				continue;
+			}
+			int l = i - counter;
+			while (l > tmpl->Gapgsize()) {
+				tmpl->OverflowProcess();
+				l -= tmpl->Gapgsize();
+			}
+			l = i - counter;
+			
+			wcsncpy(tmpl->arr + tmpl->gstart, cc+counter, l);
+			
+			tmpl->gstart += l;
+			tmpl->len += l;
+
+
+			if (cc[i] == L'\r')
+			{
+				i++;//跳到'\n'处,然后for循环的++跳到下一字符
+				counter = i + 1;
+				tmpl = tmpl->NewLine();
+			}
+			else {
+				tmpl->gend = tmpl->size - storelen;
+				wcsncpy(tmpl->arr+tmpl->gend, store, storelen);
+				tmpl->len += storelen;
+				
+			}
+		}
+
+	}
+	return tmpl;
 }
 
 /* 得到光标左侧元素*/
@@ -378,7 +461,7 @@ void Line::Rwrite(const wchar_t &c)
 }
 
 /*替换输入一串字符*/
-void Line::Rwrite(const wchar_t * &cc)
+void Line::Rwrite(wchar_t * &cc)
 {
 	int cclen = wcslen(cc);
 	if (cclen >= len - gstart) {
@@ -390,18 +473,7 @@ void Line::Rwrite(const wchar_t * &cc)
 	Insert(cc);
 }
 
-std::wstring Line::curContent() {
 
-	std::wstring str;
-	
-	for (int i = 0; i < gstart; i++) {
-		str += arr[i];
-	}
-	for (int i = gend; i < size; i++) {
-		str += arr[i];
-	}
-	return str;
-}
 
 int Line::CharWidth()
 {
@@ -447,11 +519,23 @@ int Line:: CharWidth(int d) const
 
 void Line::MakeEmpty()
 {
-	delete[] arr;
 	len = 0;
 	mark = -1;
 	gstart = 0;
 	gend = size;
-	arr = new wchar_t[size+1];
-	arr[size] = L'\0';
+	memset(arr, 0, sizeof(wchar_t)*(size + 1));
+}
+void Line::MakeEmpty(int i)
+{
+	if (i == -1) {
+		memset(arr, 0, sizeof(wchar_t)*gstart);
+		len -=gstart;
+		gstart = 0;
+	}
+	else {
+
+		memset(arr+gend, 0, sizeof(wchar_t)*(len - gstart));
+		len = gstart;
+		gend = size;
+	}
 }
