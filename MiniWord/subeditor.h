@@ -70,8 +70,11 @@ public:
 	int Getsize();//取size (总大小)值
 	int Getlen();//取len 有效字符长度（用户眼中字符长度）
 	int Getlen(int i) const;//取len 有效字符长度（用户眼中字符长度）
-	wchar_t * GetPos();//返回该行字符串
+	
+	wchar_t * GetPos();//返回该行字符串指针
 	wchar_t * GetPos(int i);//返回左右字符串 LF, return arr ，RG ， return arr+gend
+
+	wchar_t * GetStr();//返回字符串;
 
 	int CharWidth();//字符长度
 	int CharWidth(int i) const;//i=1 右侧，i=-1 左侧
@@ -86,8 +89,10 @@ public:
 	wchar_t Top(int i);//LG得到左侧元素 RG得到右侧元素
 	void Push(const wchar_t c,int i);//插入一个字符 LF,插左，RG插右
 	
+
 	line Insert(wchar_t * &cc);//插入字符串，返回插入字符串后当前行
-	
+	line Insert(wchar_t * &cc, int &num);//插入字符串，返回插入字符串后当前行,num增加了插入字符串中的回车数。
+
 	wchar_t Pop(int p);//删除一个字符，p=1删除光标后面的相当于del , p=-1删除光标前面的相当于backspace。
 
 	void Delete();//删除标记mark到光标gstart.mark标记在第mark字符的右侧，mark+1的左侧。
