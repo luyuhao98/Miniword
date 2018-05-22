@@ -364,10 +364,7 @@ line Line::Insert(wchar_t * &cc, int &num)
 	}
 	
 	if (!flag) {
-		while (cclen > Gapgsize()) {
-			OverflowProcess();
-			cclen -= Gapgsize();
-		}
+		while (cclen > Gapgsize()) OverflowProcess();
 		cclen = wcslen(cc);
 		wcsncpy(arr + gstart, cc, cclen);
 		gstart += cclen;
@@ -388,10 +385,7 @@ line Line::Insert(wchar_t * &cc, int &num)
 				continue;
 			}
 			int l = i - counter;
-			while (l > tmpl->Gapgsize()) {
-				tmpl->OverflowProcess();
-				l -= tmpl->Gapgsize();
-			}
+			while (l > tmpl->Gapgsize()) tmpl->OverflowProcess();
 			l = i - counter;
 			
 			wcsncpy(tmpl->arr + tmpl->gstart, cc+counter, l);
@@ -408,6 +402,8 @@ line Line::Insert(wchar_t * &cc, int &num)
 				num++;
 			}
 			else {
+				while (storelen > tmpl->Gapgsize()) tmpl->OverflowProcess();
+
 				tmpl->gend = tmpl->size - storelen;
 				wcsncpy(tmpl->arr+tmpl->gend, store, storelen);
 				tmpl->len += storelen;
