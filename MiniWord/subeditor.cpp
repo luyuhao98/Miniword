@@ -311,6 +311,16 @@ wchar_t * Line::GetPos(int i)
 	else return arr + gend;
 }
 
+/*返回字符串;*/
+wchar_t * Line::GetStr()
+{
+	wchar_t * l = new wchar_t[len + 1];
+	memset(l,0,sizeof(wchar_t)*(len+1));
+	wcsncpy(l, GetPos(LF), Getlen(LF));
+	wcsncpy(l + Getlen(LF), GetPos(RG), Getlen(RG));
+	return l;
+}
+
 /* 插入一个字符*/
 void Line::Push(const wchar_t c, int i)
 {
@@ -327,10 +337,19 @@ void Line::Push(const wchar_t c, int i)
 	len++;
 }
 
+
+
+/*插入字符串，返回插入字符串后当前行*/
+line Line::Insert(wchar_t * &cc)
+{
+	int num = 0;
+	return Insert(cc, num);
+}
+
 /*插入字符串*/
 /* TMD,windows环境下换行处 是一个\r回车符 和一个\n换行符构成 :\r\n */
 
-line Line::Insert(wchar_t * &cc)
+line Line::Insert(wchar_t * &cc, int &num)
 {
 	line tmpl = this;
 	size_t cclen = wcslen(cc);
@@ -346,10 +365,7 @@ line Line::Insert(wchar_t * &cc)
 	}
 	
 	if (!flag) {
-		while (cclen > Gapgsize()) {
-			OverflowProcess();
-			cclen -= Gapgsize();
-		}
+		while (cclen > Gapgsize()) OverflowProcess();
 		cclen = wcslen(cc);
 		wcsncpy(arr + gstart, cc, cclen);
 		gstart += cclen;
@@ -370,10 +386,7 @@ line Line::Insert(wchar_t * &cc)
 				continue;
 			}
 			int l = i - counter;
-			while (l > tmpl->Gapgsize()) {
-				tmpl->OverflowProcess();
-				l -= tmpl->Gapgsize();
-			}
+			while (l > tmpl->Gapgsize()) tmpl->OverflowProcess();
 			l = i - counter;
 			
 			wcsncpy(tmpl->arr + tmpl->gstart, cc+counter, l);
@@ -387,8 +400,11 @@ line Line::Insert(wchar_t * &cc)
 				i++;//跳到'\n'处,然后for循环的++跳到下一字符
 				counter = i + 1;
 				tmpl = tmpl->NewLine();
+				num++;
 			}
 			else {
+				while (storelen > tmpl->Gapgsize()) tmpl->OverflowProcess();
+
 				tmpl->gend = tmpl->size - storelen;
 				wcsncpy(tmpl->arr+tmpl->gend, store, storelen);
 				tmpl->len += storelen;
