@@ -298,6 +298,7 @@ int Line::GetGend()//取gend;
 /*返回该行字符串*/
 wchar_t * Line::GetPos()
 {
+	
 	return arr;
 }
 
