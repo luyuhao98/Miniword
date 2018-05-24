@@ -37,7 +37,6 @@ typedef class Line
 public:
 	int len;//有效字符数量
 	int size;//Article的总大小(字符数量)
-	int mark;//Mark不在这行为-1，若在这行，mark为其实际位置
 	int gstart;//gapstart,gap开始位置，光标位置（光标若在）
 	int gend;//gapend,gap结束位置
 	wchar_t * arr;//数组
@@ -95,9 +94,8 @@ public:
 
 	wchar_t Pop(int p);//删除一个字符，p=1删除光标后面的相当于del , p=-1删除光标前面的相当于backspace。
 
-	void Delete();//删除标记mark到光标gstart.mark标记在第mark字符的右侧，mark+1的左侧。
+	//void Delete();//删除标记mark到光标gstart.mark标记在第mark字符的右侧，mark+1的左侧。
 	void Rwrite(const wchar_t &c);//替换输入下一字符
-	void Rwrite(wchar_t * &cc);//替换输入一串字符
 
 	bool IsFirstL() { return this->pre->pre == nullptr; }
 	bool IsLastL() { return this->next->next == nullptr; }
@@ -136,5 +134,5 @@ public:
 	int LineNum(void) const { return lineNum; }
 	void IncLineN(void) { lineNum++; }
 	void clearWord(); //清空当前Article
-
+	void Delete(int y1, int x1, int y2, int x2); // 删除y1行x1个字符到y2行x2个字符 (无先后顺序)
 };

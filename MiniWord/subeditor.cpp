@@ -111,7 +111,6 @@ Line::Line(int sz)
 		return;
 	size = sz;
 	len = 0;
-	mark = -1;
 	gstart = 0;//gstart 默认指向将要输入字符的位置,即gap的第一个位置
 	gend = size;//gend 默认指向右侧buffer第一个字符的位置，数组下标从0到size-1, gend=size表示右侧没有字符。
 	arr = NULL;
@@ -338,6 +337,13 @@ void Line::Push(const wchar_t c, int i)
 }
 
 
+/*替换输入下一字符*/
+void Line::Rwrite(const wchar_t &c)
+{
+	if (IsFull()) OverflowProcess();
+	arr[gstart++] = c;
+	gend++;
+}
 
 /*插入字符串，返回插入字符串后当前行*/
 line Line::Insert(wchar_t * &cc)
@@ -356,7 +362,7 @@ line Line::Insert(wchar_t * &cc, int &num)
 	
 	int counter = 0;
 	int flag = 0;
-
+	
 	for (int i = 0; i < cclen; i++) {
 		if (cc[i] == L'\r') {
 			flag = 1;
@@ -402,14 +408,15 @@ line Line::Insert(wchar_t * &cc, int &num)
 				tmpl = tmpl->NewLine();
 				num++;
 			}
-			else {
-				while (storelen > tmpl->Gapgsize()) tmpl->OverflowProcess();
+		}
 
-				tmpl->gend = tmpl->size - storelen;
-				wcsncpy(tmpl->arr+tmpl->gend, store, storelen);
-				tmpl->len += storelen;
-				
-			}
+		{
+			while (storelen > tmpl->Gapgsize()) tmpl->OverflowProcess();
+
+			tmpl->gend = tmpl->size - storelen;
+			wcsncpy(tmpl->arr + tmpl->gend, store, storelen);
+			tmpl->len += storelen;
+
 		}
 
 	}
@@ -457,40 +464,6 @@ wchar_t Line::Pop(int p)
 	return NULL;
 }
 
-/*删除标记mark到光标gstart.mark标记在第mark字符的右侧，mark+1的左侧。*/
-void Line::Delete()
-{
-	if (gstart <= mark) {
-		len -= mark - gstart;
-		gend += mark - gstart;
-	}
-	else {
-		len -= gstart - mark;
-		gstart = mark;
-	}
-}
-
-/*替换输入下一字符*/
-void Line::Rwrite(const wchar_t &c)
-{
-	arr[gstart++] = c;
-	gend++;
-}
-
-/*替换输入一串字符*/
-void Line::Rwrite(wchar_t * &cc)
-{
-	int cclen = wcslen(cc);
-	if (cclen >= len - gstart) {
-		gend = size;
-	}
-	else {
-		gend += cclen;
-	}
-	Insert(cc);
-}
-
-
 
 int Line::CharWidth()
 {
@@ -537,7 +510,6 @@ int Line:: CharWidth(int d) const
 void Line::MakeEmpty()
 {
 	len = 0;
-	mark = -1;
 	gstart = 0;
 	gend = size;
 	memset(arr, 0, sizeof(wchar_t)*(size + 1));
@@ -555,4 +527,52 @@ void Line::MakeEmpty(int i)
 		len = gstart;
 		gend = size;
 	}
+}
+
+/*删除 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符*/
+void Article::Delete(int py, int px, int my, int mx)
+{
+
+	if (py == my) {
+		if (px == mx) return;
+		/*同行操作*/
+		else {
+			if (px > mx)
+			{
+				int t = px;
+				px = mx;
+				mx = t;
+			}
+			/* px < mx */
+			line tmpl = GetLine(py);
+			tmpl->PointMoveto(px);
+			tmpl->gend += mx - px;
+		}
+	}
+	if (py > my) {
+		int t = py;
+		py = my;
+		my = t;
+		t = px;
+		px = mx;
+		mx = t;
+	}
+
+	line lp = GetLine(py);
+	line lm = GetLine(my);
+	lp->PointMoveto(px);
+	lm->PointMoveto(mx);
+	
+	
+	lp->MakeEmpty(RG);
+	lp->len = lp->gstart;
+
+	int lenm = lm->Getlen(RG);
+	while (lenm < lp->Gapgsize()) lp->OverflowProcess();
+	wcsncpy(lp->GetPos(RG), lm->GetPos(RG),lenm);
+	lp->len += lenm;
+
+	while (lp->next != lm)
+		delete lp->next;
+	delete lm;
 }
