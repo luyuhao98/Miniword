@@ -6,20 +6,18 @@ class Caret
 public:
 	int CaretPosX, CaretPosY;
 
-	Caret(int x = 0, int y = 0);
-	~Caret() {};
+	Caret(int x = 0, int y = 0) : CaretPosX(x), CaretPosY(y) {}
+	~Caret() = default;
 
-	void MvRight		(line L);
-	void MvLeft		(line L);
-	void MvUp		(line L);
-	void MvDown		(line L);
-	void MvHome		(line L);
-	void MvEnd		(line L);
-	void MvPrior	(line L);
-	void MvNext		(line L);
+	void MvRight(line&, HDC&);
+	void MvLeft(line&, HDC&);
+	void MvUp(line&, HDC&);
+	void MvDown(line&, HDC&);
+	void MvHome(line&, HDC&);
+	void MvEnd(line&, HDC&);
 
-	wchar_t CtrDelete	(line L);
-	void CtrEnter	(line L);
-	void CtrCaretMv	(line L, int X, int Y);
-	void CtrDelLine	(line L);
+	void CtrDelete(line&, HDC&);
+	void CtrEnter(line&, HDC&);
+	void CtrCaretMv(Article&, int, int, HDC&);
+	void CtrDelLine(line&);
 };

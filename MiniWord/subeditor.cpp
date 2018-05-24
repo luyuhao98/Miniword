@@ -47,7 +47,7 @@ line Article::GetLine(int lineNum) const
 	return p;
 }
 /*给line返回行号，注意，如果没找到这一行，则返回-1 */
-int Article::GetNum(line l) const 
+int Article::GetNum(line& l) const
 {
 	int i = 0;
 	line lstart = this->firstL->next;
@@ -60,8 +60,7 @@ int Article::GetNum(line l) const
 	return i;
 }
 
-
-void Article::InsertAfter(line L)
+void Article::InsertAfter(line& L)
 {
 	line newL = new Line;
 	newL->pre = L;
@@ -78,12 +77,12 @@ void Article::Remove(line & L)
 	lineNum--;
 }
 
-int Article::MaxWidth(void) const
+int Article::MaxWidth(HDC hdc) const
 {
 	int Max = -1;
 	int a;
 	for (line L = this->firstL->next; L != this->lastL; L = L->next) {
-		a = L->CharWidth();
+		a = L->CharWidth(hdc);
 		if (a > Max)
 			Max = a;
 	}
@@ -116,11 +115,9 @@ Line::Line(int sz)
 	arr = NULL;
 
 	arr = new wchar_t[sz+1];
-
 	memset(arr, 0, sizeof(wchar_t)*(sz + 1));
-	
-	if (arr == NULL) exit(0);//申请空间失败
 
+	if (arr == NULL) exit(0);//申请空间失败
 }
 
 /*析构一个Line,并连接上下指针*/
@@ -177,7 +174,7 @@ void Line::OverflowProcess()
 	size += GapIncrement;
 
 	wchar_t * newarr = NULL;
-	
+
 	newarr = new wchar_t[size + 1];
 	memset(newarr, 0, sizeof(wchar_t)*(size + 1));
 
@@ -297,7 +294,6 @@ int Line::GetGend()//取gend;
 /*返回该行字符串*/
 wchar_t * Line::GetPos()
 {
-	
 	return arr;
 }
 
@@ -359,7 +355,7 @@ line Line::Insert(wchar_t * &cc, int &num)
 {
 	line tmpl = this;
 	size_t cclen = wcslen(cc);
-	
+
 	int counter = 0;
 	int flag = 0;
 	
@@ -367,9 +363,9 @@ line Line::Insert(wchar_t * &cc, int &num)
 		if (cc[i] == L'\r') {
 			flag = 1;
 			break;
-		}	
+		}
 	}
-	
+
 	if (!flag) {
 		while (cclen > Gapgsize()) OverflowProcess();
 		cclen = wcslen(cc);
@@ -383,20 +379,20 @@ line Line::Insert(wchar_t * &cc, int &num)
 		memset(store, 0, sizeof(wchar_t)*(storelen + 1));
 		sizeof(store);/////////////
 		wcsncpy(store, this->GetPos(RG), storelen);
-		
+
 		MakeEmpty(RG);
 
 		for (int i = 0; i < cclen; i++) {
-			
+
 			if (cc[i] != L'\r' && i != cclen - 1) {
 				continue;
 			}
 			int l = i - counter;
 			while (l > tmpl->Gapgsize()) tmpl->OverflowProcess();
 			l = i - counter;
-			
-			wcsncpy(tmpl->arr + tmpl->gstart, cc+counter, l);
-			
+
+			wcsncpy(tmpl->arr + tmpl->gstart, cc + counter, l);
+
 			tmpl->gstart += l;
 			tmpl->len += l;
 
@@ -409,15 +405,14 @@ line Line::Insert(wchar_t * &cc, int &num)
 				num++;
 			}
 		}
+		
+		while (storelen > tmpl->Gapgsize()) tmpl->OverflowProcess();
 
-		{
-			while (storelen > tmpl->Gapgsize()) tmpl->OverflowProcess();
+		tmpl->gend = tmpl->size - storelen;
+		wcsncpy(tmpl->arr + tmpl->gend, store, storelen);
+		tmpl->len += storelen;
 
-			tmpl->gend = tmpl->size - storelen;
-			wcsncpy(tmpl->arr + tmpl->gend, store, storelen);
-			tmpl->len += storelen;
-
-		}
+		
 
 	}
 	return tmpl;
@@ -465,47 +460,66 @@ wchar_t Line::Pop(int p)
 }
 
 
-int Line::CharWidth()
+/*替换输入下一字符*/
+void Line::Rwrite(const wchar_t &c)
 {
-	int width = 0;
-	for (int i = gstart - 1; i >= 0; i--) {
-		if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
-			width += 2;
-		}
-		else width += 1;
-	}
-	for (int i = gend; i < size; i++) {
-		if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
-			width += 2;
-		}
-		else width += 1;
-	}
-	return width;
+	arr[gstart++] = c;
+	gend++;
+}
 }
 
-int Line:: CharWidth(int d) const
+
+
+int Line::CharWidth(HDC hdc)
 {
+	/*	int width = 0;
+	for (int i = gstart - 1; i >= 0; i--) {
+	if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
+	width += 2;
+	}
+	else width += 1;
+	}
+	for (int i = gend; i < size; i++) {
+	if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
+	width += 2;
+	}
+	else width += 1;
+	}
+	return width;
+	*/
+	return CharWidth(LF, hdc) + CharWidth(RG, hdc);
+}
 
-	int width = 0;
-
+int Line::CharWidth(int d, HDC hdc) const
+{
+	int width = 0, nCharWidth = 0;
 	if (d == LF) {
 		for (int i = gstart - 1; i >= 0; i--) {
-			if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
-				width += 2;
+			GetCharWidth32W(hdc, (UINT)arr[i], (UINT)arr[i],
+				&nCharWidth);
+			width += nCharWidth;
+			/*			if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
+			width += 2;
 			}
 			else width += 1;
+			*/
 		}
 	}
 	else {
 		for (int i = gend; i < size; i++) {
-			if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
-				width += 2;
+			GetCharWidth32W(hdc, (UINT)arr[i], (UINT)arr[i],
+				&nCharWidth);
+			width += nCharWidth;
+			/*			if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
+			width += 2;
 			}
 			else width += 1;
+			*/
 		}
 	}
 	return width;
 }
+
 
 void Line::MakeEmpty()
 {
