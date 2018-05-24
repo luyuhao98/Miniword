@@ -333,14 +333,6 @@ void Line::Push(const wchar_t c, int i)
 }
 
 
-/*替换输入下一字符*/
-void Line::Rwrite(const wchar_t &c)
-{
-	if (IsFull()) OverflowProcess();
-	arr[gstart++] = c;
-	gend++;
-}
-
 /*插入字符串，返回插入字符串后当前行*/
 line Line::Insert(wchar_t * &cc)
 {
@@ -466,7 +458,7 @@ void Line::Rwrite(const wchar_t &c)
 	arr[gstart++] = c;
 	gend++;
 }
-}
+
 
 
 
