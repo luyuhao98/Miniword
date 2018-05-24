@@ -36,16 +36,14 @@ typedef class Line
 {
 public:
 	int len;//有效字符数量
-	int size;//Article的总大小(字符数量)
+	int size;//Line的总大小(字符数量)
 	int mark;//Mark不在这行为-1，若在这行，mark为其实际位置
 	int gstart;//gapstart,gap开始位置，光标位置（光标若在）
 	int gend;//gapend,gap结束位置
-	wchar_t * arr;//数组
-
+	wchar_t* arr;//数组
 
 	line pre;//上一个Line
 	line next;//下一个Line
-
 
 	Line(int sz = DefaultSize);//创建一个空Line，包括创建指针，申请空间size
 	~Line();//析构一个Line,并连接上下指针
@@ -55,7 +53,6 @@ public:
 	int RleaseProcess();//释放gapbuffer为0;
 	void OverflowProcess(); //用于满了后申请数组
 
-
 	int PointMove(int p); //为正，光标往行尾移动p位。为负，光标往行首移动p位。
 	void PointMoveto(int d);//将光标移动到第d个字符
 	//PointMove( -1 )		int LeftMovePoint();//不改变原句，光标左移
@@ -63,32 +60,31 @@ public:
 	int Gapmove();//改变point后移动gap
 
 	int UsertoGap(int);//传入面向user字符的位置，返回在arr中的真实位置
-	
+
 	int Gapgsize();//取gap的宽度;
 	int GetPoint();//取gstart（目前光标位置）
 	int GetGend();//取gend;
 	int Getsize();//取size (总大小)值
 	int Getlen();//取len 有效字符长度（用户眼中字符长度）
 	int Getlen(int i) const;//取len 有效字符长度（用户眼中字符长度）
-	
+
 	wchar_t * GetPos();//返回该行字符串指针
 	wchar_t * GetPos(int i);//返回左右字符串 LF, return arr ，RG ， return arr+gend
 
 	wchar_t * GetStr();//返回字符串;
 
-	int CharWidth();//字符长度
-	int CharWidth(int i) const;//i=1 右侧，i=-1 左侧
+	int CharWidth(HDC hdc);//字符长度
+	int CharWidth(int i, HDC hdc) const;//i=1 右侧，i=-1 左侧
 
 	int IsEmpty(int i) const;	//判断Line是否为空 ，i可为LF，RG
 	int IsEmpty();			//判断Line是否为空
-	
+
 
 	void MakeEmpty();//清空内容
 	void MakeEmpty(int i);//清空内容 清空左右内容
 
 	wchar_t Top(int i);//LG得到左侧元素 RG得到右侧元素
-	void Push(const wchar_t c,int i);//插入一个字符 LF,插左，RG插右
-	
+	void Push(const wchar_t c, int i);//插入一个字符 LF,插左，RG插右
 
 	line Insert(wchar_t * &cc);//插入字符串，返回插入字符串后当前行
 	line Insert(wchar_t * &cc, int &num);//插入字符串，返回插入字符串后当前行,num增加了插入字符串中的回车数。
@@ -105,8 +101,7 @@ public:
 	//	int Savespace();//不再操作本Line（newLine或者point移出本行）时执行，若Line为空，释放数组。若gap>400，整理gap至400。
 	//int Readfile();//从这行读文件 * ///
 	//int Writefile(); //用这行写入文件* ///
-} * line;
-
+} *line;
 
 class Article {
 private:
@@ -122,19 +117,18 @@ public:
 	~Article();
 
 	bool IsEmpty() const;
-	bool IsFirstL(line L) const { return L->pre == firstL; }
-	bool IsLastL(line L) const { return L->next == lastL; }
-	bool IsEnd(line L) const { return L == lastL; }
-	
-	line GetLine(int lineNum) const;
-	int GetNum(line l) const;
-	int MaxWidth(void) const;
+	bool IsFirstL(line& L) const { return L->pre == firstL; }
+	bool IsLastL(line& L) const { return L->next == lastL; }
+	bool IsEnd(line& L) const { return L == lastL; }
 
-	void InsertAfter(line L);
+	line GetLine(int lineNum) const;
+	int GetNum(line& L) const;
+	int MaxWidth(HDC) const;
+
+	void InsertAfter(line& L);
 	void Remove(line &L);
 
 	int LineNum(void) const { return lineNum; }
 	void IncLineN(void) { lineNum++; }
 	void clearWord(); //清空当前Article
-
 };
