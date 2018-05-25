@@ -98,7 +98,7 @@ void Article::clearWord() {
 	curL = curL-> next;
 	line nextL;
 
-	while (!IsLastL(curL)) {
+	while (!IsEnd(curL)) {
 		nextL = curL->next;
 		Remove(curL);
 		curL = nextL;
