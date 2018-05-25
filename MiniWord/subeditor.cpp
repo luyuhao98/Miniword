@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#define MAXL 500
 
 Article::Article()
 {
@@ -490,8 +491,6 @@ void Line::Rwrite(wchar_t * &cc)
 	Insert(cc);
 }
 
-
-
 int Line::CharWidth()
 {
 	int width = 0;
@@ -555,4 +554,83 @@ void Line::MakeEmpty(int i)
 		len = gstart;
 		gend = size;
 	}
+}
+
+int * Article::getNextVal(const wchar_t *s)
+{
+	size_t len = wcslen(s);
+	int * next = new int[len];
+	int i = 0;
+	int j = -1;
+	next[0] = -1;
+	while (i<len - 1)//注意这里跟KMP函数里面的不同
+	{
+		if (j == -1 || s[i] == s[j])
+		{
+			++i;
+			++j;
+			next[i] = j;
+		}
+		else
+		{
+			j = next[j];
+		}
+	}
+	return next;
+}
+
+int Article::KMP(const wchar_t *s, const wchar_t *t)
+{
+	size_t slen, tlen;
+	int i=0 , j=0;
+	int * next = getNextVal(t);
+	slen = wcslen(s);
+	tlen = wcslen(t);
+
+	while (i<slen)
+		while ( j<tlen && i<slen)
+		{
+			if (j == -1 || s[i] == t[j]){
+				++i; ++j;
+			}
+			else  j = next[j];
+			if (j == tlen) {
+				return i - tlen + 1;
+			}
+		}
+
+	delete[] next;
+	return -1;
+}
+
+int Article::onSearch(line & tmpL, const wchar_t * t) //tmpL是当前光标所在行，t是待匹配的字串
+{
+	
+	/*先对当前行光标后面的部分进行查找*/
+	wchar_t * s = new wchar_t[tmpL->size + 1];
+	wcsncpy(s , tmpL->GetPos(RG) ,  tmpL->Getlen(RG));
+
+	int res = KMP(s, t);
+	if (res != -1) {
+		tmpL->PointMoveto(res);
+		return res;
+	}
+	else {
+		/*如果当前行之后的部分未找到，则对后面的行进行搜索*/
+		if (!IsEnd(tmpL)) tmpL = tmpL->next;
+
+		while (!IsEnd(tmpL))
+		{  
+			wchar_t * s = tmpL->GetStr();
+			int res = KMP(s, t);
+			if (res != -1) {
+				tmpL->PointMoveto(res);
+				return res;
+			}
+			delete[]  s;			   
+			tmpL = tmpL->next;
+		}
+	}
+	delete[] t;
+	return -1;
 }

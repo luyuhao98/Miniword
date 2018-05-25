@@ -46,7 +46,6 @@ public:
 	line pre;//上一个Line
 	line next;//下一个Line
 
-
 	Line(int sz = DefaultSize);//创建一个空Line，包括创建指针，申请空间size
 	~Line();//析构一个Line,并连接上下指针
 	line NewLine();//在本Line后面新建一个Line
@@ -136,5 +135,10 @@ public:
 	int LineNum(void) const { return lineNum; }
 	void IncLineN(void) { lineNum++; }
 	void clearWord(); //清空当前Article
+
+	/* 查找功能 */
+	int onSearch(line & curL, const wchar_t * t);
+	int KMP(const wchar_t *s, const wchar_t *t); 
+	int * getNextVal(const wchar_t *s);
 
 };
