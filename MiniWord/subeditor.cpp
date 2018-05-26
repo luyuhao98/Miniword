@@ -48,7 +48,7 @@ line Article::GetLine(int lineNum) const
 	return p;
 }
 /*给line返回行号，注意，如果没找到这一行，则返回-1 */
-int Article::GetNum(line l) const 
+int Article::GetNum(line& l) const
 {
 	int i = 0;
 	line lstart = this->firstL->next;
@@ -61,8 +61,7 @@ int Article::GetNum(line l) const
 	return i;
 }
 
-
-void Article::InsertAfter(line L)
+void Article::InsertAfter(line& L)
 {
 	line newL = new Line;
 	newL->pre = L;
@@ -79,12 +78,12 @@ void Article::Remove(line & L)
 	lineNum--;
 }
 
-int Article::MaxWidth(void) const
+int Article::MaxWidth(HDC hdc) const
 {
 	int Max = -1;
 	int a;
 	for (line L = this->firstL->next; L != this->lastL; L = L->next) {
-		a = L->CharWidth();
+		a = L->CharWidth(hdc);
 		if (a > Max)
 			Max = a;
 	}
@@ -112,17 +111,14 @@ Line::Line(int sz)
 		return;
 	size = sz;
 	len = 0;
-	mark = -1;
 	gstart = 0;//gstart 默认指向将要输入字符的位置,即gap的第一个位置
 	gend = size;//gend 默认指向右侧buffer第一个字符的位置，数组下标从0到size-1, gend=size表示右侧没有字符。
 	arr = NULL;
 
 	arr = new wchar_t[sz+1];
-
 	memset(arr, 0, sizeof(wchar_t)*(sz + 1));
-	
-	if (arr == NULL) exit(0);//申请空间失败
 
+	if (arr == NULL) exit(0);//申请空间失败
 }
 
 /*析构一个Line,并连接上下指针*/
@@ -179,7 +175,7 @@ void Line::OverflowProcess()
 	size += GapIncrement;
 
 	wchar_t * newarr = NULL;
-	
+
 	newarr = new wchar_t[size + 1];
 	memset(newarr, 0, sizeof(wchar_t)*(size + 1));
 
@@ -299,7 +295,6 @@ int Line::GetGend()//取gend;
 /*返回该行字符串*/
 wchar_t * Line::GetPos()
 {
-	
 	return arr;
 }
 
@@ -339,7 +334,6 @@ void Line::Push(const wchar_t c, int i)
 }
 
 
-
 /*插入字符串，返回插入字符串后当前行*/
 line Line::Insert(wchar_t * &cc)
 {
@@ -354,17 +348,17 @@ line Line::Insert(wchar_t * &cc, int &num)
 {
 	line tmpl = this;
 	size_t cclen = wcslen(cc);
-	
+
 	int counter = 0;
 	int flag = 0;
-
+	
 	for (int i = 0; i < cclen; i++) {
 		if (cc[i] == L'\r') {
 			flag = 1;
 			break;
-		}	
+		}
 	}
-	
+
 	if (!flag) {
 		while (cclen > Gapgsize()) OverflowProcess();
 		cclen = wcslen(cc);
@@ -378,20 +372,20 @@ line Line::Insert(wchar_t * &cc, int &num)
 		memset(store, 0, sizeof(wchar_t)*(storelen + 1));
 		sizeof(store);/////////////
 		wcsncpy(store, this->GetPos(RG), storelen);
-		
+
 		MakeEmpty(RG);
 
 		for (int i = 0; i < cclen; i++) {
-			
+
 			if (cc[i] != L'\r' && i != cclen - 1) {
 				continue;
 			}
 			int l = i - counter;
 			while (l > tmpl->Gapgsize()) tmpl->OverflowProcess();
 			l = i - counter;
-			
-			wcsncpy(tmpl->arr + tmpl->gstart, cc+counter, l);
-			
+
+			wcsncpy(tmpl->arr + tmpl->gstart, cc + counter, l);
+
 			tmpl->gstart += l;
 			tmpl->len += l;
 
@@ -403,15 +397,15 @@ line Line::Insert(wchar_t * &cc, int &num)
 				tmpl = tmpl->NewLine();
 				num++;
 			}
-			else {
-				while (storelen > tmpl->Gapgsize()) tmpl->OverflowProcess();
-
-				tmpl->gend = tmpl->size - storelen;
-				wcsncpy(tmpl->arr+tmpl->gend, store, storelen);
-				tmpl->len += storelen;
-				
-			}
 		}
+		
+		while (storelen > tmpl->Gapgsize()) tmpl->OverflowProcess();
+
+		tmpl->gend = tmpl->size - storelen;
+		wcsncpy(tmpl->arr + tmpl->gend, store, storelen);
+		tmpl->len += storelen;
+
+		
 
 	}
 	return tmpl;
@@ -458,18 +452,6 @@ wchar_t Line::Pop(int p)
 	return NULL;
 }
 
-/*删除标记mark到光标gstart.mark标记在第mark字符的右侧，mark+1的左侧。*/
-void Line::Delete()
-{
-	if (gstart <= mark) {
-		len -= mark - gstart;
-		gend += mark - gstart;
-	}
-	else {
-		len -= gstart - mark;
-		gstart = mark;
-	}
-}
 
 /*替换输入下一字符*/
 void Line::Rwrite(const wchar_t &c)
@@ -478,65 +460,64 @@ void Line::Rwrite(const wchar_t &c)
 	gend++;
 }
 
-/*替换输入一串字符*/
-void Line::Rwrite(wchar_t * &cc)
-{
-	int cclen = wcslen(cc);
-	if (cclen >= len - gstart) {
-		gend = size;
-	}
-	else {
-		gend += cclen;
-	}
-	Insert(cc);
-}
 
-int Line::CharWidth()
+
+
+int Line::CharWidth(HDC hdc)
 {
-	int width = 0;
+	/*	int width = 0;
 	for (int i = gstart - 1; i >= 0; i--) {
-		if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
-			width += 2;
-		}
-		else width += 1;
+	if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
+	width += 2;
+	}
+	else width += 1;
 	}
 	for (int i = gend; i < size; i++) {
-		if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
-			width += 2;
-		}
-		else width += 1;
+	if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
+	width += 2;
+	}
+	else width += 1;
 	}
 	return width;
+	*/
+	return CharWidth(LF, hdc) + CharWidth(RG, hdc);
 }
 
-int Line:: CharWidth(int d) const
+
+int Line::CharWidth(int d, HDC hdc) const
 {
-
-	int width = 0;
-
+	int width = 0, nCharWidth = 0;
 	if (d == LF) {
 		for (int i = gstart - 1; i >= 0; i--) {
-			if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
-				width += 2;
+			GetCharWidth32W(hdc, (UINT)arr[i], (UINT)arr[i],
+				&nCharWidth);
+			width += nCharWidth;
+			/*			if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
+			width += 2;
 			}
 			else width += 1;
+			*/
 		}
 	}
 	else {
 		for (int i = gend; i < size; i++) {
-			if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
-				width += 2;
+			GetCharWidth32W(hdc, (UINT)arr[i], (UINT)arr[i],
+				&nCharWidth);
+			width += nCharWidth;
+			/*			if (0x4E00 <= arr[i] && arr[i] <= 0x9FBB) {
+			width += 2;
 			}
 			else width += 1;
+			*/
 		}
 	}
 	return width;
 }
 
+
 void Line::MakeEmpty()
 {
 	len = 0;
-	mark = -1;
 	gstart = 0;
 	gend = size;
 	memset(arr, 0, sizeof(wchar_t)*(size + 1));
@@ -554,6 +535,54 @@ void Line::MakeEmpty(int i)
 		len = gstart;
 		gend = size;
 	}
+}
+
+/*删除 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符*/
+void Article::Delete(int py, int px, int my, int mx)
+{
+
+	if (py == my) {
+		if (px == mx) return;
+		/*同行操作*/
+		else {
+			if (px > mx)
+			{
+				int t = px;
+				px = mx;
+				mx = t;
+			}
+			/* px < mx */
+			line tmpl = GetLine(py);
+			tmpl->PointMoveto(px);
+			tmpl->gend += mx - px;
+		}
+	}
+	if (py > my) {
+		int t = py;
+		py = my;
+		my = t;
+		t = px;
+		px = mx;
+		mx = t;
+	}
+
+	line lp = GetLine(py);
+	line lm = GetLine(my);
+	lp->PointMoveto(px);
+	lm->PointMoveto(mx);
+	
+	
+	lp->MakeEmpty(RG);
+	lp->len = lp->gstart;
+
+	int lenm = lm->Getlen(RG);
+	while (lenm < lp->Gapgsize()) lp->OverflowProcess();
+	wcsncpy(lp->GetPos(RG), lm->GetPos(RG),lenm);
+	lp->len += lenm;
+
+	while (lp->next != lm)
+		delete lp->next;
+	delete lm;
 }
 
 int * Article::getNextVal(const wchar_t *s)
