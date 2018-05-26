@@ -582,3 +582,76 @@ void Article::Delete(int py, int px, int my, int mx)
 		delete lp->next;
 	delete lm;
 }
+
+/*拷贝 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符*/
+wchar_t* Article:: GetStr(int py, int px, int my, int mx) {
+	if (py == my) {
+		if (px == mx) return;
+		/*同行操作*/
+		else {
+			/*前提p(光标)所在位置gstart在px处*/
+			line l = GetLine(py);
+			if (px > mx) {
+				wchar_t * tmp = new wchar_t[px - mx];
+				wcsncpy(tmp, l->arr + mx, px - mx);
+				return tmp;
+			}
+			else {
+				wchar_t * tmp = new wchar_t[mx-px];
+				wcsncpy(tmp, l->arr + l->gend, mx - px);
+				return tmp;
+
+			}
+		}
+	}
+
+	/*情况为m,p光标位置均为mx，px处*/
+
+	if (my > py)
+	{
+		int t = my;
+		my = py;
+		py = t;
+		t = mx;
+		mx = px;
+		px = t;
+	}
+
+
+
+	line m = GetLine(my);
+	line p = GetLine(py);
+	if (my < py) {
+		/*得到长度*/
+		int sum = 0;
+		sum += m -> Getlen(RG) + 2;
+		line t = m->next;
+		while (t != p)
+		{
+			sum += t->Getlen() + 2;
+			t = t->next;
+		}
+		sum += p->Getlen(LF);
+
+		/*复制进入字符串*/
+		
+		wchar_t * tmp = new wchar_t[sum + 1];
+		sum = 0;
+		
+		wcsncpy(tmp+sum, m->GetPos(RG), m->Getlen(RG));
+		sum += m->Getlen(RG);
+		wcsncpy(tmp + sum, L"\r\n", 2);
+		sum += 2;
+
+		t = m->next;
+		while (t != p)
+		{
+			wcsncpy(tmp + sum, t->GetPos(), t->Getlen());
+			sum += t->Getlen();
+			wcsncpy(tmp + sum, L"\r\n", 2);
+			sum += 2;
+		}
+		wcsncpy(tmp + sum, p->GetPos(LF), p->Getlen(LF));
+		return tmp;
+	}
+}

@@ -125,5 +125,6 @@ public:
 	int LineNum(void) const { return lineNum; }
 	void IncLineN(void) { lineNum++; }
 	void clearWord(); //清空当前Article
-	void Delete(int y1, int x1, int y2, int x2); //删除 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符
+	void Delete(int py, int px, int my, int mx); //删除 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符
+	wchar_t* GetStr(int py, int px, int my, int mx); //复制 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符
 };
