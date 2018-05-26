@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#define MAXL 500
 
 Article::Article()
 {
@@ -96,7 +97,7 @@ void Article::clearWord() {
 	curL = curL-> next;
 	line nextL;
 
-	while (!IsLastL(curL)) {
+	while (!IsEnd(curL)) {
 		nextL = curL->next;
 		Remove(curL);
 		curL = nextL;
@@ -482,6 +483,7 @@ int Line::CharWidth(HDC hdc)
 	return CharWidth(LF, hdc) + CharWidth(RG, hdc);
 }
 
+
 int Line::CharWidth(int d, HDC hdc) const
 {
 	int width = 0, nCharWidth = 0;
@@ -584,9 +586,9 @@ void Article::Delete(int py, int px, int my, int mx)
 }
 
 /*拷贝 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符*/
-wchar_t* Article:: GetStr(int py, int px, int my, int mx) {
+wchar_t* Article::GetStr(int py, int px, int my, int mx) {
 	if (py == my) {
-		if (px == mx) return;
+		if (px == mx) return NULL;
 		/*同行操作*/
 		else {
 			/*前提p(光标)所在位置gstart在px处*/
@@ -597,7 +599,7 @@ wchar_t* Article:: GetStr(int py, int px, int my, int mx) {
 				return tmp;
 			}
 			else {
-				wchar_t * tmp = new wchar_t[mx-px];
+				wchar_t * tmp = new wchar_t[mx - px];
 				wcsncpy(tmp, l->arr + l->gend, mx - px);
 				return tmp;
 
@@ -624,7 +626,7 @@ wchar_t* Article:: GetStr(int py, int px, int my, int mx) {
 	if (my < py) {
 		/*得到长度*/
 		int sum = 0;
-		sum += m -> Getlen(RG) + 2;
+		sum += m->Getlen(RG) + 2;
 		line t = m->next;
 		while (t != p)
 		{
@@ -634,11 +636,11 @@ wchar_t* Article:: GetStr(int py, int px, int my, int mx) {
 		sum += p->Getlen(LF);
 
 		/*复制进入字符串*/
-		
+
 		wchar_t * tmp = new wchar_t[sum + 1];
 		sum = 0;
-		
-		wcsncpy(tmp+sum, m->GetPos(RG), m->Getlen(RG));
+
+		wcsncpy(tmp + sum, m->GetPos(RG), m->Getlen(RG));
 		sum += m->Getlen(RG);
 		wcsncpy(tmp + sum, L"\r\n", 2);
 		sum += 2;
@@ -654,4 +656,84 @@ wchar_t* Article:: GetStr(int py, int px, int my, int mx) {
 		wcsncpy(tmp + sum, p->GetPos(LF), p->Getlen(LF));
 		return tmp;
 	}
+}
+
+
+int * Article::getNextVal(const wchar_t *s)
+{
+	size_t len = wcslen(s);
+	int * next = new int[len];
+	int i = 0;
+	int j = -1;
+	next[0] = -1;
+	while (i<len - 1)//注意这里跟KMP函数里面的不同
+	{
+		if (j == -1 || s[i] == s[j])
+		{
+			++i;
+			++j;
+			next[i] = j;
+		}
+		else
+		{
+			j = next[j];
+		}
+	}
+	return next;
+}
+
+int Article::KMP(const wchar_t *s, const wchar_t *t)
+{
+	size_t slen, tlen;
+	int i=0 , j=0;
+	int * next = getNextVal(t);
+	slen = wcslen(s);
+	tlen = wcslen(t);
+
+	while (i<slen)
+		while ( j<tlen && i<slen)
+		{
+			if (j == -1 || s[i] == t[j]){
+				++i; ++j;
+			}
+			else  j = next[j];
+			if (j == tlen) {
+				return i - tlen + 1;
+			}
+		}
+
+	delete[] next;
+	return -1;
+}
+
+int Article::onSearch(line & tmpL, const wchar_t * t) //tmpL是当前光标所在行，t是待匹配的字串
+{
+	
+	/*先对当前行光标后面的部分进行查找*/
+	wchar_t * s = new wchar_t[tmpL->size + 1];
+	wcsncpy(s , tmpL->GetPos(RG) ,  tmpL->Getlen(RG));
+
+	int res = KMP(s, t);
+	if (res != -1) {
+		tmpL->PointMoveto(res);
+		return res;
+	}
+	else {
+		/*如果当前行之后的部分未找到，则对后面的行进行搜索*/
+		if (!IsEnd(tmpL)) tmpL = tmpL->next;
+
+		while (!IsEnd(tmpL))
+		{  
+			wchar_t * s = tmpL->GetStr();
+			int res = KMP(s, t);
+			if (res != -1) {
+				tmpL->PointMoveto(res);
+				return res;
+			}
+			delete[]  s;			   
+			tmpL = tmpL->next;
+		}
+	}
+	delete[] t;
+	return -1;
 }
