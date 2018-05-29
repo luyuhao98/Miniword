@@ -460,9 +460,6 @@ void Line::Rwrite(const wchar_t &c)
 	gend++;
 }
 
-
-
-
 int Line::CharWidth(HDC hdc)
 {
 	/*	int width = 0;
@@ -645,7 +642,7 @@ line Article::onSearch(line tmpL, const wchar_t * t) //tmpL是当前光标所在行，t是
 	}
 	else {
 		/*如果当前行之后的部分未找到，则对后面的行进行搜索*/
-		if (!IsEnd(tmpL)) tmpL = tmpL->next;
+		/*if (!IsEnd(tmpL)) tmpL = tmpL->next;
 
 		while (!IsEnd(tmpL))
 		{  
@@ -657,7 +654,8 @@ line Article::onSearch(line tmpL, const wchar_t * t) //tmpL是当前光标所在行，t是
 			}
 			delete[]  s;			   
 			tmpL = tmpL->next;
-		}
+		}*/
+		return NULL;
 	}
 	delete[] t;
 	return NULL;
