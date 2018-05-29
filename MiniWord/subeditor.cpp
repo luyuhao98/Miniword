@@ -737,3 +737,28 @@ int Article::onSearch(line & tmpL, const wchar_t * t) //tmpLÊÇµ±Ç°¹â±êËùÔÚĞĞ£¬tÊ
 	delete[] t;
 	return -1;
 }
+
+int Article::GetCharNum(int x, int y, HDC& hdc)
+{
+	line L = GetLine(y);
+
+	if (!L) return -1;
+
+	int width = 0;
+	int i = 0, nCharWidth = 0;
+
+	for (i = 0; i <= L->gstart-1 ; ++i) {
+		GetCharWidth32W(hdc, (UINT)L->arr[i], (UINT)L->arr[i], &nCharWidth);
+		width += nCharWidth;
+		if (width > x)
+			return i;
+	}
+
+	for (i = L->gend; i <= L->size; ++i) {
+		GetCharWidth32W(hdc, (UINT)L->arr[i], (UINT)L->arr[i], &nCharWidth);
+		width += nCharWidth;
+		if (width > x)
+			return i-L->Gapgsize();
+	}
+	return L->len;
+}

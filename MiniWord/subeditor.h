@@ -131,5 +131,9 @@ public:
 	int onSearch(line & curL, const wchar_t * t);
 	int KMP(const wchar_t *s, const wchar_t *t);
 	int * getNextVal(const wchar_t *s);
+	
+	/*给定坐标x（左条长+现鼠标与左端距离），行号y
+	return值为：若点下后的gstart。超过行距返回glen*/
+	int GetCharNum(int x, int y, HDC& hdc);
 
 };
