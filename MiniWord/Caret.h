@@ -19,5 +19,4 @@ public:
 	void CtrDelete(line&, HDC&);
 	void CtrEnter(line&, HDC&);
 	void CtrCaretMv(Article&, int, int, HDC&);
-	void CtrDelLine(line&);
 };
