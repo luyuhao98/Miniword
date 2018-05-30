@@ -122,6 +122,7 @@ void Caret::CtrEnter(line& L, HDC& hdc)
 
 void Caret::CtrCaretMv(Article& Ar, int x, int y, HDC& hdc)
 {
+	
 	line L = Ar.GetLine(CaretPosY);
 	L->Gapmove();
 	CaretPosY = y;
@@ -135,4 +136,5 @@ void Caret::CtrCaretMv(Article& Ar, int x, int y, HDC& hdc)
 	}
 	CaretPosX = width;
 	L->PointMoveto(i);
+
 }
