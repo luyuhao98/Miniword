@@ -69,7 +69,6 @@ public:
 
 	wchar_t * GetPos();//返回该行字符串指针
 	wchar_t * GetPos(int i);//返回左右字符串 LF, return arr ，RG ， return arr+gend
-
 	wchar_t * GetStr();//返回字符串;
 
 	int CharWidth(HDC hdc);//字符长度
@@ -128,7 +127,7 @@ public:
 	void Delete(int py, int px, int my, int mx); //删除 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符
 	wchar_t* GetStr(int py, int px, int my, int mx); //复制 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符
 	 /* 查找功能 */
-	int onSearch(line & curL, const wchar_t * t);
+	line onSearch(line tmpL, const wchar_t * t);
 	int KMP(const wchar_t *s, const wchar_t *t);
 	int * getNextVal(const wchar_t *s);
 	

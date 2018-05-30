@@ -460,9 +460,6 @@ void Line::Rwrite(const wchar_t &c)
 	gend++;
 }
 
-
-
-
 int Line::CharWidth(HDC hdc)
 {
 	/*	int width = 0;
@@ -570,7 +567,8 @@ void Article::Delete(int py, int px, int my, int mx)
 	line lm = GetLine(my);
 	lp->PointMoveto(px);
 	lm->PointMoveto(mx);
-
+	
+	
 	lp->MakeEmpty(RG);
 	lp->len = lp->gstart;
 
@@ -683,7 +681,7 @@ int * Article::getNextVal(const wchar_t *s)
 
 int Article::KMP(const wchar_t *s, const wchar_t *t)
 {
-	size_t slen, tlen;
+	int slen, tlen;
 	int i=0 , j=0;
 	int * next = getNextVal(t);
 	slen = wcslen(s);
@@ -697,25 +695,25 @@ int Article::KMP(const wchar_t *s, const wchar_t *t)
 			}
 			else  j = next[j];
 			if (j == tlen) {
-				return i - tlen + 1;
+				return i - tlen;
 			}
 		}
 
 	delete[] next;
 	return -1;
 }
-
-int Article::onSearch(line & tmpL, const wchar_t * t) //tmpLÊÇµ±Ç°¹â±êËùÔÚÐÐ£¬tÊÇ´ýÆ¥ÅäµÄ×Ö´®
+line Article::onSearch(line tmpL, const wchar_t * t) //tmpLÊÇµ±Ç°¹â±êËùÔÚÐÐ£¬tÊÇ´ýÆ¥ÅäµÄ×Ö´®
 {
-	
+	/*´Ë´¦µÄtmpLÊÇÐÎ²Î£¬¸Ä±äËü²»»á¶ÔÈ«¾Ö±äÁ¿²úÉú¸Ä±ä£¬Òò´ËÓÃ·µ»ØÖµ´«»ØÈ¥*/
 	/*ÏÈ¶Ôµ±Ç°ÐÐ¹â±êºóÃæµÄ²¿·Ö½øÐÐ²éÕÒ*/
 	wchar_t * s = new wchar_t[tmpL->size + 1];
+	memset(s, 0, sizeof(wchar_t)*(tmpL->size +1));
 	wcsncpy(s , tmpL->GetPos(RG) ,  tmpL->Getlen(RG));
 
 	int res = KMP(s, t);
 	if (res != -1) {
 		tmpL->PointMoveto(res);
-		return res;
+		return tmpL;
 	}
 	else {
 		/*Èç¹ûµ±Ç°ÐÐÖ®ºóµÄ²¿·ÖÎ´ÕÒµ½£¬Ôò¶ÔºóÃæµÄÐÐ½øÐÐËÑË÷*/
@@ -727,14 +725,16 @@ int Article::onSearch(line & tmpL, const wchar_t * t) //tmpLÊÇµ±Ç°¹â±êËùÔÚÐÐ£¬tÊ
 			int res = KMP(s, t);
 			if (res != -1) {
 				tmpL->PointMoveto(res);
-				return res;
+				return tmpL;
 			}
-			delete[]  s;
+			delete[]  s; 
+			tmpL->Gapmove();
 			tmpL = tmpL->next;
 		}
+		return NULL;
 	}
 	delete[] t;
-	return -1;
+	return NULL;
 }
 
 int Article::GetCharNum(int x, int y, HDC& hdc)
