@@ -5,6 +5,7 @@
 #!**/Debug/*.exe
 **/Release/*
 #!**/Release/*.exe
+*.aps
 
 #忽略.vs文件
 /.vs/
