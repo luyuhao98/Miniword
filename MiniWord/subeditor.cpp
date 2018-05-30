@@ -695,7 +695,7 @@ int Article::KMP(const wchar_t *s, const wchar_t *t)
 			}
 			else  j = next[j];
 			if (j == tlen) {
-				return i - tlen;
+				return i;
 			}
 		}
 
@@ -710,9 +710,10 @@ line Article::onSearch(line tmpL, const wchar_t * t) //tmpL是当前光标所在行，t是
 	memset(s, 0, sizeof(wchar_t)*(tmpL->size +1));
 	wcsncpy(s , tmpL->GetPos(RG) ,  tmpL->Getlen(RG));
 
+	int lenL = tmpL->Getlen(LF);//光标左侧的字符数量
 	int res = KMP(s, t);
 	if (res != -1) {
-		tmpL->PointMoveto(res);
+		tmpL->PointMoveto(res+lenL);
 		return tmpL;
 	}
 	else {
