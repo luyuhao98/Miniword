@@ -177,12 +177,12 @@ void Line::OverflowProcess()
 	wchar_t * newarr = NULL;
 
 	newarr = new wchar_t[size + 1];
-	memset(newarr, 0, sizeof(wchar_t)*(size + 1));
-
 	if (newarr == NULL) exit(0);
 
+	memset(newarr, 0, sizeof(wchar_t)*(size + 1));
+	
 	wcsncpy(newarr, arr, gstart);
-	wcsncpy(newarr + gend + GapIncrement, arr + gend, len-gend);
+	wcsncpy(newarr + gend + GapIncrement, arr + gend, len-gstart);
 
 	delete[] arr;
 	arr = newarr;

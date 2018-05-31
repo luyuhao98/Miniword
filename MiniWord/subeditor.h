@@ -5,10 +5,6 @@ const int DefaultSize = 100;//默认
 typedef class Line * line;
 enum stack { LF=-1 , RG=1 };
 
-class position {
-	line y;	//所在Line
-	int x;	//在有效字符的位置
-};	//一个光标点point, 一个记录点mark
 /*
 发现：
 ~x的范围：
@@ -105,8 +101,6 @@ private:
 public:
 	line L;//目前正操作的Line头
 
-	position point;
-	position mark;
 	Article();//构造 linehead的next为空
 	~Article();
 
@@ -135,5 +129,4 @@ public:
 	/*给定坐标x（左条长+现鼠标与左端距离），行号y
 	return值为：若点下后的gstart。超过行距返回glen*/
 	int GetCharNum(int x, int y, HDC& hdc);
-
 };
