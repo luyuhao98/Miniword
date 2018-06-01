@@ -5,10 +5,6 @@ const int DefaultSize = 100;//默认
 typedef class Line * line;
 enum stack { LF=-1 , RG=1 };
 
-class position {
-	line y;	//所在Line
-	int x;	//在有效字符的位置
-};	//一个光标点point, 一个记录点mark
 /*
 发现：
 ~x的范围：
@@ -84,8 +80,8 @@ public:
 	wchar_t Top(int i);//LG得到左侧元素 RG得到右侧元素
 	void Push(const wchar_t c, int i);//插入一个字符 LF,插左，RG插右
 
-	line Insert(wchar_t * &cc);//插入字符串，返回插入字符串后当前行
-	line Insert(wchar_t * &cc, int &num);//插入字符串，返回插入字符串后当前行,num增加了插入字符串中的回车数。
+	line Insert(wchar_t * cc);//插入字符串，返回插入字符串后当前行
+	line Insert(wchar_t * cc, int &num);//插入字符串，返回插入字符串后当前行,num增加了插入字符串中的回车数。
 
 	wchar_t Pop(int p);//删除一个字符，p=1删除光标后面的相当于del , p=-1删除光标前面的相当于backspace。
 	void Rwrite(const wchar_t &c);//替换输入下一字符
@@ -104,8 +100,6 @@ private:
 public:
 	line L;//目前正操作的Line头
 
-	position point;
-	position mark;
 	Article();//构造 linehead的next为空
 	~Article();
 
@@ -131,8 +125,10 @@ public:
 	int KMP(const wchar_t *s, const wchar_t *t);
 	int * getNextVal(const wchar_t *s);
 
+	/*替换功能*/
+	line OnReplace(line tmpL, wchar_t * preStr,wchar_t * rpStr); //替换操作，preStr是查找的串，rpStr是待替换上的串
+
 	/*给定坐标x（左条长+现鼠标与左端距离），行号y
 	return值为：若点下后的gstart。超过行距返回glen*/
 	int GetCharNum(int x, int y, HDC& hdc);
-
 };
