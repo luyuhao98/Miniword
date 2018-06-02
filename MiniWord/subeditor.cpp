@@ -349,7 +349,6 @@ line Line::Insert(wchar_t * cc, int &num)
 {
 	line tmpl = this;
 	size_t cclen = wcslen(cc);
-
 	int counter = 0;
 	int flag = 0;
 	
@@ -383,8 +382,7 @@ line Line::Insert(wchar_t * cc, int &num)
 			}
 			int l = i - counter;
 			while (l > tmpl->Gapgsize()) tmpl->OverflowProcess();
-			l = i - counter;
-
+			
 			wcsnmove(tmpl->arr + tmpl->gstart, cc + counter, l);
 
 			tmpl->gstart += l;
@@ -409,6 +407,7 @@ line Line::Insert(wchar_t * cc, int &num)
 		
 
 	}
+
 	return tmpl;
 }
 
@@ -576,12 +575,15 @@ void Article::Delete(int py, int px, int my, int mx)
 	lp->len = lp->gstart;
 
 	int lenm = lm->Getlen(RG);
-	while (lenm < lp->Gapgsize()) lp->OverflowProcess();
+	while (lenm > lp->Gapgsize()) lp->OverflowProcess();
 	wcsnmove(lp->GetPos(RG), lm->GetPos(RG),lenm);
 	lp->len += lenm;
 
 	while (lp->next != lm)
+	{
 		delete lp->next;
+		DecLineN();
+	}
 	delete lm;
 }
 
@@ -776,4 +778,77 @@ line Article::OnReplace(line tmpL, wchar_t * preStr,wchar_t * rpStr) {
 	tmpL->Insert(rpStr);
 
 	return tmpL;
+}
+
+void Article::Insert(int &y, int &x, wchar_t * cc)
+{
+	int sely = y;
+	int selx = x;
+	line l = GetLine(y);
+	l->PointMoveto(x);
+	
+	int num = GetNum(l);//为了记录End的行号
+	
+	size_t cclen = wcslen(cc);
+	int counter = 0;
+	int flag = 0;
+
+	for (int i = 0; i < cclen; i++) {
+		if (cc[i] == L'\r') {
+			flag = 1;
+			break;
+		}
+	}
+
+	if (!flag) {
+		while (cclen > l->Gapgsize()) l->OverflowProcess();
+		cclen = wcslen(cc);
+		wcsnmove(l->arr + l->gstart, cc, cclen);
+		l->gstart += cclen;
+		l->len += cclen;
+	}
+	else {
+		int storelen =l-> Getlen(RG);
+		wchar_t * store = new wchar_t[storelen + 1];
+		memset(store, 0, sizeof(wchar_t)*(storelen + 1));
+		sizeof(store);/////////////
+		wcsnmove(store, l->GetPos(RG), storelen);
+
+		l->MakeEmpty(RG);
+
+		for (int i = 0; i < cclen; i++) {
+
+			if (cc[i] != L'\r' && i != cclen - 1) {
+				continue;
+			}
+			int len = i - counter;
+			while (len > l->Gapgsize()) l->OverflowProcess();
+
+			wcsnmove(l->arr + l->gstart, cc + counter, len);
+
+			l->gstart += len;
+			l->len += len;
+
+
+			if (cc[i] == L'\r')
+			{
+				i++;//跳到'\n'处,然后for循环的++跳到下一字符
+				counter = i + 1;
+				l = l->NewLine();
+				IncLineN();//行数加一
+				num++;
+				y++;
+			}
+		}
+
+		while (storelen > l->Gapgsize()) l->OverflowProcess();
+
+		l->gend = l->size - storelen;
+		wcsnmove(l->arr + l->gend, store, storelen);
+		l->len += storelen;
+	
+	}
+	x = l->gstart;
+	undo a = new Undo(selectPos{selx,sely}, selectPos{ l->gstart,num });
+	UndoStack.push(a);
 }

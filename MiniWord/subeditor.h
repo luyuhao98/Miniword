@@ -1,5 +1,9 @@
 #pragma once
 
+#include<iostream>
+#include <stack>
+#include"undo.h"
+
 const int GapIncrement = 50;// gapArticle每次增加大小
 const int DefaultSize = 100;//默认
 typedef class Line * line;
@@ -117,9 +121,12 @@ public:
 
 	int LineNum(void) const { return lineNum; }
 	void IncLineN(void) { lineNum++; }
+	void DecLineN(void) { lineNum--; }
 	void clearWord(); //清空当前Article
 	void Delete(int py, int px, int my, int mx); //删除 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符
 	wchar_t* GetStr(int py, int px, int my, int mx); //复制 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符
+	void Insert(int &py,int &px, wchar_t * cc);//指定光标位置 插入字符串
+
 	 /* 查找功能 */
 	line onSearch(line tmpL, const wchar_t * t);
 	int KMP(const wchar_t *s, const wchar_t *t);
@@ -131,5 +138,10 @@ public:
 	/*给定坐标x（左条长+现鼠标与左端距离），行号y
 	return值为：若点下后的gstart。超过行距返回glen*/
 	int GetCharNum(int x, int y, HDC& hdc);
+
+	/*撤销栈与恢复栈*/
+	std::stack<undo> UndoStack;//撤销栈
+	std::stack<undo> RndoStack;//恢复栈
+
 };
 
