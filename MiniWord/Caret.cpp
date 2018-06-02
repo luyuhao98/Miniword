@@ -115,6 +115,7 @@ void Caret::CtrEnter(line& L, HDC& hdc)
 	while (!L->IsEmpty(RG)) {
 		newL->Push(L->Pop(RG),LF);
 	}
+	
 	newL->PointMoveto(0);
 	CaretPosX = 0;
 	CaretPosY++;

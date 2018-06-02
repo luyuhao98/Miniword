@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #define MAXL 500
 
+
 Article::Article()
 {
 	L = new Line;
@@ -181,8 +182,8 @@ void Line::OverflowProcess()
 
 	memset(newarr, 0, sizeof(wchar_t)*(size + 1));
 	
-	wcsncpy(newarr, arr, gstart);
-	wcsncpy(newarr + gend + GapIncrement, arr + gend, len-gstart);
+	wcsnmove(newarr, arr, gstart);
+	wcsnmove(newarr + gend + GapIncrement, arr + gend, len-gstart);
 
 	delete[] arr;
 	arr = newarr;
@@ -204,7 +205,7 @@ int Line::PointMove(int p)
 		if (p > len - gstart)
 			return 0;
 		else {
-			wcsncpy(arr + gstart, arr + gend, p);
+			wcsnmove(arr + gstart, arr + gend, p);
 			gstart += p;
 			gend += p;
 		}
@@ -219,7 +220,7 @@ int Line::PointMove(int p)
 		if (p > gstart)
 			return 0;
 		else {
-			wcsncpy(arr + gend - p, arr + gstart - p, p);
+			memmove(arr + gend - p, arr + gstart - p, sizeof(wchar_t)*p);
 			gstart -= p;
 			gend -= p;
 		}
@@ -238,7 +239,7 @@ void Line::PointMoveto(int d)
 int Line::Gapmove()
 {
 	/*将后半的数据拷贝与前半合并*/
-	wcsncpy(arr + gstart, arr + gend, size - gend);
+	wcsnmove(arr + gstart, arr + gend, size - gend);
 	gend = size;
 	gstart = len;
 	//Line::Savespace();
@@ -312,8 +313,8 @@ wchar_t * Line::GetStr()
 {
 	wchar_t * l = new wchar_t[len + 1];
 	memset(l,0,sizeof(wchar_t)*(len+1));
-	wcsncpy(l, GetPos(LF), Getlen(LF));
-	wcsncpy(l + Getlen(LF), GetPos(RG), Getlen(RG));
+	wcsnmove(l, GetPos(LF), Getlen(LF));
+	wcsnmove(l + Getlen(LF), GetPos(RG), Getlen(RG));
 	return l;
 }
 
@@ -362,7 +363,7 @@ line Line::Insert(wchar_t * &cc, int &num)
 	if (!flag) {
 		while (cclen > Gapgsize()) OverflowProcess();
 		cclen = wcslen(cc);
-		wcsncpy(arr + gstart, cc, cclen);
+		wcsnmove(arr + gstart, cc, cclen);
 		gstart += cclen;
 		len += cclen;
 	}
@@ -371,7 +372,7 @@ line Line::Insert(wchar_t * &cc, int &num)
 		wchar_t * store = new wchar_t[storelen+ 1];
 		memset(store, 0, sizeof(wchar_t)*(storelen + 1));
 		sizeof(store);/////////////
-		wcsncpy(store, this->GetPos(RG), storelen);
+		wcsnmove(store, this->GetPos(RG), storelen);
 
 		MakeEmpty(RG);
 
@@ -384,7 +385,7 @@ line Line::Insert(wchar_t * &cc, int &num)
 			while (l > tmpl->Gapgsize()) tmpl->OverflowProcess();
 			l = i - counter;
 
-			wcsncpy(tmpl->arr + tmpl->gstart, cc + counter, l);
+			wcsnmove(tmpl->arr + tmpl->gstart, cc + counter, l);
 
 			tmpl->gstart += l;
 			tmpl->len += l;
@@ -402,7 +403,7 @@ line Line::Insert(wchar_t * &cc, int &num)
 		while (storelen > tmpl->Gapgsize()) tmpl->OverflowProcess();
 
 		tmpl->gend = tmpl->size - storelen;
-		wcsncpy(tmpl->arr + tmpl->gend, store, storelen);
+		wcsnmove(tmpl->arr + tmpl->gend, store, storelen);
 		tmpl->len += storelen;
 
 		
@@ -574,7 +575,7 @@ void Article::Delete(int py, int px, int my, int mx)
 
 	int lenm = lm->Getlen(RG);
 	while (lenm < lp->Gapgsize()) lp->OverflowProcess();
-	wcsncpy(lp->GetPos(RG), lm->GetPos(RG),lenm);
+	wcsnmove(lp->GetPos(RG), lm->GetPos(RG),lenm);
 	lp->len += lenm;
 
 	while (lp->next != lm)
@@ -592,12 +593,12 @@ wchar_t* Article::GetStr(int py, int px, int my, int mx) {
 			line l = GetLine(py);
 			if (px > mx) {
 				wchar_t * tmp = new wchar_t[px - mx];
-				wcsncpy(tmp, l->arr + mx, px - mx);
+				wcsnmove(tmp, l->arr + mx, px - mx);
 				return tmp;
 			}
 			else {
 				wchar_t * tmp = new wchar_t[mx - px];
-				wcsncpy(tmp, l->arr + l->gend, mx - px);
+				wcsnmove(tmp, l->arr + l->gend, mx - px);
 				return tmp;
 
 			}
@@ -637,20 +638,20 @@ wchar_t* Article::GetStr(int py, int px, int my, int mx) {
 		wchar_t * tmp = new wchar_t[sum + 1];
 		sum = 0;
 
-		wcsncpy(tmp + sum, m->GetPos(RG), m->Getlen(RG));
+		wcsnmove(tmp + sum, m->GetPos(RG), m->Getlen(RG));
 		sum += m->Getlen(RG);
-		wcsncpy(tmp + sum, L"\r\n", 2);
+		wcsnmove(tmp + sum, L"\r\n", 2);
 		sum += 2;
 
 		t = m->next;
 		while (t != p)
 		{
-			wcsncpy(tmp + sum, t->GetPos(), t->Getlen());
+			wcsnmove(tmp + sum, t->GetPos(), t->Getlen());
 			sum += t->Getlen();
-			wcsncpy(tmp + sum, L"\r\n", 2);
+			wcsnmove(tmp + sum, L"\r\n", 2);
 			sum += 2;
 		}
-		wcsncpy(tmp + sum, p->GetPos(LF), p->Getlen(LF));
+		wcsnmove(tmp + sum, p->GetPos(LF), p->Getlen(LF));
 		return tmp;
 	}
 }
@@ -708,7 +709,7 @@ line Article::onSearch(line tmpL, const wchar_t * t) //tmpL是当前光标所在行，t是
 	/*先对当前行光标后面的部分进行查找*/
 	wchar_t * s = new wchar_t[tmpL->size + 1];
 	memset(s, 0, sizeof(wchar_t)*(tmpL->size +1));
-	wcsncpy(s , tmpL->GetPos(RG) ,  tmpL->Getlen(RG));
+	wcsnmove(s , tmpL->GetPos(RG) ,  tmpL->Getlen(RG));
 
 	int lenL = tmpL->Getlen(LF);//光标左侧的字符数量
 	int res = KMP(s, t);

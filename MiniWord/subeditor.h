@@ -129,3 +129,4 @@ public:
 	return值为：若点下后的gstart。超过行距返回glen*/
 	int GetCharNum(int x, int y, HDC& hdc);
 };
+
