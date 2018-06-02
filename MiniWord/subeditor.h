@@ -9,6 +9,7 @@ const int DefaultSize = 100;//默认
 typedef class Line * line;
 enum stack { LF=-1 , RG=1 };
 
+enum UNRE { U, R };//区分对哪个栈进行操作
 /*
 发现：
 ~x的范围：
@@ -84,9 +85,6 @@ public:
 	wchar_t Top(int i);//LG得到左侧元素 RG得到右侧元素
 	void Push(const wchar_t c, int i);//插入一个字符 LF,插左，RG插右
 
-	line Insert(wchar_t * cc);//插入字符串，返回插入字符串后当前行
-	line Insert(wchar_t * cc, int &num);//插入字符串，返回插入字符串后当前行,num增加了插入字符串中的回车数。
-
 	wchar_t Pop(int p);//删除一个字符，p=1删除光标后面的相当于del , p=-1删除光标前面的相当于backspace。
 	void Rwrite(const wchar_t &c);//替换输入下一字符
 
@@ -123,9 +121,13 @@ public:
 	void IncLineN(void) { lineNum++; }
 	void DecLineN(void) { lineNum--; }
 	void clearWord(); //清空当前Article
-	void Delete(int py, int px, int my, int mx); //删除 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符
+
+	
+	selectPos Delete(int py, int px, int my, int mx,int flag=U); //删除 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字 符
 	wchar_t* GetStr(int py, int px, int my, int mx); //复制 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符
-	void Insert(int &py,int &px, wchar_t * cc);//指定光标位置 插入字符串
+	
+	void Insert(int &py,int &px, wchar_t * cc,int flag);//指定光标位置 插入字符串,并且改变py px 为当前所在位置,主要面向粘贴等
+	void Insert(int &py, wchar_t * cc);//同上插入字符串,不过此时为光标位置已经选好，主要面向撤销
 
 	 /* 查找功能 */
 	line onSearch(line tmpL, const wchar_t * t);
@@ -141,7 +143,7 @@ public:
 
 	/*撤销栈与恢复栈*/
 	std::stack<undo> UndoStack;//撤销栈
-	std::stack<undo> RndoStack;//恢复栈
-
+	std::stack<undo> RedoStack;//恢复栈
+	void Emptyredo();//当有新操作时，清空恢复栈
 };
 
