@@ -336,7 +336,7 @@ void Line::Push(const wchar_t c, int i)
 
 
 /*插入字符串，返回插入字符串后当前行*/
-line Line::Insert(wchar_t * &cc)
+line Line::Insert(wchar_t * cc)
 {
 	int num = 0;
 	return Insert(cc, num);
@@ -345,7 +345,7 @@ line Line::Insert(wchar_t * &cc)
 /*插入字符串*/
 /* TMD,windows环境下换行处 是一个\r回车符 和一个\n换行符构成 :\r\n */
 
-line Line::Insert(wchar_t * &cc, int &num)
+line Line::Insert(wchar_t * cc, int &num)
 {
 	line tmpl = this;
 	size_t cclen = wcslen(cc);
@@ -553,7 +553,9 @@ void Article::Delete(int py, int px, int my, int mx)
 			line tmpl = GetLine(py);
 			tmpl->PointMoveto(px);
 			tmpl->gend += mx - px;
+			tmpl->len -= mx - px;
 		}
+		return;
 	}
 	if (py > my) {
 		int t = py;
@@ -748,7 +750,7 @@ int Article::GetCharNum(int x, int y, HDC& hdc)
 	int width = 0;
 	int i = 0, nCharWidth = 0;
 
-	for (i = 0; i <= L->gstart-1 ; ++i) {
+	for (i = 0; i <= L->gstart - 1; ++i) {
 		GetCharWidth32W(hdc, (UINT)L->arr[i], (UINT)L->arr[i], &nCharWidth);
 		width += nCharWidth;
 		if (width > x)
@@ -759,7 +761,19 @@ int Article::GetCharNum(int x, int y, HDC& hdc)
 		GetCharWidth32W(hdc, (UINT)L->arr[i], (UINT)L->arr[i], &nCharWidth);
 		width += nCharWidth;
 		if (width > x)
-			return i-L->Gapgsize();
+			return i - L->Gapgsize();
 	}
 	return L->len;
+}
+
+
+line Article::OnReplace(line tmpL, wchar_t * preStr,wchar_t * rpStr) {
+
+	int Y = GetNum(tmpL);
+	int mx = tmpL->Getlen(LF);//光标左侧的字符数量
+	int px = mx - wcslen(preStr);
+	Delete (Y, px, Y, mx);
+	tmpL->Insert(rpStr);
+
+	return tmpL;
 }

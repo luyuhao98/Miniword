@@ -136,5 +136,4 @@ void Caret::CtrCaretMv(Article& Ar, int x, int y, HDC& hdc)
 	}
 	CaretPosX = width;
 	L->PointMoveto(i);
-
 }
