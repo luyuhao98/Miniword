@@ -101,24 +101,26 @@ void Caret::MvEnd(line& L, HDC& hdc)
 	L->Gapmove();
 }
 
-void Caret::CtrDelete(line& L, HDC& hdc)
+void Caret::CtrDelete(Article &Ar, line& tmpL, HDC& hdc)
 {
-	if (!L->IsEmpty(RG)) {
-		L->Pop(RG);
-	}
+	selectPos p;
+
+	if (!tmpL->IsEmpty(RG))
+		p = Ar.Delete(CaretPosY, tmpL->Getlen(LF), CaretPosY, tmpL->Getlen(LF) + 1);
+	else if (!tmpL->IsLastL())p = Ar.Delete(CaretPosY, tmpL->Getlen(LF), CaretPosY + 1, 0);
+	else return;
+	CaretPosY = p.second;
+	CaretPosX = Ar.GetLine(CaretPosY)->CharWidth(LF, hdc);
+	Ar.Emptyredo();
 }
 
-void Caret::CtrEnter(line& L, HDC& hdc)
+void Caret::CtrEnter(Article &Ar, line& tmpL, HDC& hdc)
 {
-	line newL = L->NewLine();
-
-	while (!L->IsEmpty(RG)) {
-		newL->Push(L->Pop(RG),LF);
-	}
-	
-	newL->PointMoveto(0);
+	wchar_t c[3] = L"\r\n";
+	Ar.Insert(CaretPosY, c);
+	tmpL = tmpL->next;
 	CaretPosX = 0;
-	CaretPosY++;
+	Ar.Emptyredo();
 }
 
 void Caret::CtrCaretMv(Article& Ar, int x, int y, HDC& hdc)

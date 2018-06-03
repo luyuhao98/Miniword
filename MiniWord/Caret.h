@@ -16,7 +16,7 @@ public:
 	void MvHome(line&, HDC&);
 	void MvEnd(line&, HDC&);
 
-	void CtrDelete(line&, HDC&);
-	void CtrEnter(line&, HDC&);
+	void CtrDelete(Article &,line&, HDC&);
+	void CtrEnter(Article &,line&, HDC&);
 	void CtrCaretMv(Article&, int, int, HDC&);
 };

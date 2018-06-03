@@ -335,82 +335,6 @@ void Line::Push(const wchar_t c, int i)
 }
 
 
-/*插入字符串，返回插入字符串后当前行*/
-line Line::Insert(wchar_t * cc)
-{
-	int num = 0;
-	return Insert(cc, num);
-}
-
-/*插入字符串*/
-/* TMD,windows环境下换行处 是一个\r回车符 和一个\n换行符构成 :\r\n */
-
-line Line::Insert(wchar_t * cc, int &num)
-{
-	line tmpl = this;
-	size_t cclen = wcslen(cc);
-	int counter = 0;
-	int flag = 0;
-	
-	for (int i = 0; i < cclen; i++) {
-		if (cc[i] == L'\r') {
-			flag = 1;
-			break;
-		}
-	}
-
-	if (!flag) {
-		while (cclen > Gapgsize()) OverflowProcess();
-		cclen = wcslen(cc);
-		wcsnmove(arr + gstart, cc, cclen);
-		gstart += cclen;
-		len += cclen;
-	}
-	else {
-		int storelen = Getlen(RG);
-		wchar_t * store = new wchar_t[storelen+ 1];
-		memset(store, 0, sizeof(wchar_t)*(storelen + 1));
-		sizeof(store);/////////////
-		wcsnmove(store, this->GetPos(RG), storelen);
-
-		MakeEmpty(RG);
-
-		for (int i = 0; i < cclen; i++) {
-
-			if (cc[i] != L'\r' && i != cclen - 1) {
-				continue;
-			}
-			int l = i - counter;
-			while (l > tmpl->Gapgsize()) tmpl->OverflowProcess();
-			
-			wcsnmove(tmpl->arr + tmpl->gstart, cc + counter, l);
-
-			tmpl->gstart += l;
-			tmpl->len += l;
-
-
-			if (cc[i] == L'\r')
-			{
-				i++;//跳到'\n'处,然后for循环的++跳到下一字符
-				counter = i + 1;
-				tmpl = tmpl->NewLine();
-				num++;
-			}
-		}
-		
-		while (storelen > tmpl->Gapgsize()) tmpl->OverflowProcess();
-
-		tmpl->gend = tmpl->size - storelen;
-		wcsnmove(tmpl->arr + tmpl->gend, store, storelen);
-		tmpl->len += storelen;
-
-		
-
-	}
-
-	return tmpl;
-}
-
 /* 得到光标左侧元素*/
 wchar_t Line::Top(int i)
 {
@@ -535,11 +459,12 @@ void Line::MakeEmpty(int i)
 }
 
 /*删除 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符*/
-void Article::Delete(int py, int px, int my, int mx)
+selectPos Article::Delete(int py, int px, int my, int mx,int flag)
 {
+	wchar_t * str = GetStr(py, px, my, mx);
 
 	if (py == my) {
-		if (px == mx) return;
+		if (px == mx) return{px,py};
 		/*同行操作*/
 		else {
 			if (px > mx)
@@ -551,10 +476,18 @@ void Article::Delete(int py, int px, int my, int mx)
 			/* px < mx */
 			line tmpl = GetLine(py);
 			tmpl->PointMoveto(px);
+			
+				
 			tmpl->gend += mx - px;
 			tmpl->len -= mx - px;
 		}
-		return;
+
+		/*入栈操作*/
+		undo a = new Undo{ selectPos{ px,py }, str };
+		if (flag == U) UndoStack.push(a);
+		else if (flag == R) RedoStack.push(a);
+
+		return{px,py};
 	}
 	if (py > my) {
 		int t = py;
@@ -564,7 +497,7 @@ void Article::Delete(int py, int px, int my, int mx)
 		px = mx;
 		mx = t;
 	}
-
+	/*py<my*/
 	line lp = GetLine(py);
 	line lm = GetLine(my);
 	lp->PointMoveto(px);
@@ -576,8 +509,9 @@ void Article::Delete(int py, int px, int my, int mx)
 
 	int lenm = lm->Getlen(RG);
 	while (lenm > lp->Gapgsize()) lp->OverflowProcess();
-	wcsnmove(lp->GetPos(RG), lm->GetPos(RG),lenm);
 	lp->len += lenm;
+	lp->gend -= lenm;
+	wcsnmove(lp->GetPos(RG), lm->GetPos(RG),lenm);
 
 	while (lp->next != lm)
 	{
@@ -585,6 +519,14 @@ void Article::Delete(int py, int px, int my, int mx)
 		DecLineN();
 	}
 	delete lm;
+	DecLineN();
+
+	/*入栈操作*/
+	undo a = new Undo{ selectPos{ px,py }, str };
+	if (flag == U) UndoStack.push(a);
+	else if (flag == R) RedoStack.push(a);
+
+	return { px,py };
 }
 
 /*拷贝 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符*/
@@ -594,23 +536,34 @@ wchar_t* Article::GetStr(int py, int px, int my, int mx) {
 		/*同行操作*/
 		else {
 			/*前提p(光标)所在位置gstart在px处*/
+			
 			line l = GetLine(py);
+			int tmper = l->GetPoint();
+			l->PointMoveto(px);
+			
 			if (px > mx) {
-				wchar_t * tmp = new wchar_t[px - mx];
+				wchar_t * tmp = new wchar_t[px - mx + 1];
+				memset(tmp, 0, sizeof(wchar_t)*(px - mx + 1));
 				wcsnmove(tmp, l->arr + mx, px - mx);
 				return tmp;
 			}
 			else {
-				wchar_t * tmp = new wchar_t[mx - px];
+				wchar_t * tmp = new wchar_t[mx - px + 1];
+				memset(tmp, 0, sizeof(wchar_t)*(mx - px + 1));
 				wcsnmove(tmp, l->arr + l->gend, mx - px);
 				return tmp;
 
 			}
+			l->PointMoveto(tmper);
 		}
 	}
 
 	/*情况为m,p光标位置均为mx，px处*/
-
+	
+	
+	
+	int ex = 0;
+	
 	if (my > py)
 	{
 		int t = my;
@@ -619,45 +572,63 @@ wchar_t* Article::GetStr(int py, int px, int my, int mx) {
 		t = mx;
 		mx = px;
 		px = t;
+		ex = 1;
 	}
 
 
-
+	/*先将m移送*/
 	line m = GetLine(my);
 	line p = GetLine(py);
-	if (my < py) {
-		/*得到长度*/
-		int sum = 0;
-		sum += m->Getlen(RG) + 2;
-		line t = m->next;
-		while (t != p)
-		{
-			sum += t->Getlen() + 2;
-			t = t->next;
-		}
-		sum += p->Getlen(LF);
+	
+	int tmper;
+	
+	if (ex)  tmper= p->GetPoint();
+	else  tmper = m->GetPoint();
 
-		/*复制进入字符串*/
+	m->PointMoveto(mx);
+	p->PointMoveto(px);
+	
+	/*my<py*/
+		
+	/*得到长度*/
+	int sum = 0;
+	sum += m->Getlen(RG) + 2;
+	line t = m->next;
+	while (t != p)
+	{
+		sum += t->Getlen() + 2;
+		t = t->next;
+	}
+	sum += p->Getlen(LF);
 
-		wchar_t * tmp = new wchar_t[sum + 1];
-		sum = 0;
+	/*复制进入字符串*/
 
-		wcsnmove(tmp + sum, m->GetPos(RG), m->Getlen(RG));
-		sum += m->Getlen(RG);
+	wchar_t * tmp = new wchar_t[sum + 1];
+	memset(tmp, 0, sizeof(wchar_t)*(sum+1));
+	sum = 0;
+
+	wcsnmove(tmp + sum, m->GetPos(RG), m->Getlen(RG));
+	sum += m->Getlen(RG);
+	wcsnmove(tmp + sum, L"\r\n", 2);
+	sum += 2;
+
+	t = m->next;
+	while (t != p)
+	{
+		wcsnmove(tmp + sum, t->GetPos(), t->Getlen());
+		sum += t->Getlen();
 		wcsnmove(tmp + sum, L"\r\n", 2);
 		sum += 2;
-
-		t = m->next;
-		while (t != p)
-		{
-			wcsnmove(tmp + sum, t->GetPos(), t->Getlen());
-			sum += t->Getlen();
-			wcsnmove(tmp + sum, L"\r\n", 2);
-			sum += 2;
-		}
-		wcsnmove(tmp + sum, p->GetPos(LF), p->Getlen(LF));
-		return tmp;
+		t = t->next;
 	}
+	wcsnmove(tmp + sum, p->GetPos(LF), p->Getlen(LF));
+
+	if (ex) p->PointMoveto(tmper);
+	m->PointMoveto(tmper);//m的point恢复原位
+	
+	return tmp;
+
+	
 }
 
 
@@ -774,21 +745,28 @@ line Article::OnReplace(line tmpL, wchar_t * preStr,wchar_t * rpStr) {
 	int Y = GetNum(tmpL);
 	int mx = tmpL->Getlen(LF);//光标左侧的字符数量
 	int px = mx - wcslen(preStr);
-	Delete (Y, px, Y, mx);
-	tmpL->Insert(rpStr);
+	selectPos p = Delete (Y, px, Y, mx);
+	Insert(p.second, p.first, rpStr, U);
+	undo a = new Undo();
+	UndoStack.push(a);
+	return GetLine(p.second);
 
-	return tmpL;
 }
 
-void Article::Insert(int &y, int &x, wchar_t * cc)
+void Article::Insert(int &y, wchar_t *cc) {
+	int x = GetLine(y)->Getlen(LF);
+	Insert(y, x, cc,U);
+}
+
+void Article::Insert(int &y, int &x, wchar_t * cc,int f)
 {
+	int tablen = 4;
+
 	int sely = y;
 	int selx = x;
 	line l = GetLine(y);
 	l->PointMoveto(x);
-	
-	int num = GetNum(l);//为了记录End的行号
-	
+
 	size_t cclen = wcslen(cc);
 	int counter = 0;
 	int flag = 0;
@@ -816,12 +794,13 @@ void Article::Insert(int &y, int &x, wchar_t * cc)
 
 		l->MakeEmpty(RG);
 
-		for (int i = 0; i < cclen; i++) {
-
-			if (cc[i] != L'\r' && i != cclen - 1) {
+		for (int i = 0; i <= cclen; i++) {
+			
+			if (cc[i] != L'\r' && i != cclen && cc[i]!=L'\t') {
 				continue;
 			}
 			int len = i - counter;
+			
 			while (len > l->Gapgsize()) l->OverflowProcess();
 
 			wcsnmove(l->arr + l->gstart, cc + counter, len);
@@ -836,8 +815,18 @@ void Article::Insert(int &y, int &x, wchar_t * cc)
 				counter = i + 1;
 				l = l->NewLine();
 				IncLineN();//行数加一
-				num++;
 				y++;
+			}
+			if (cc[i] == L'\t') {
+				if (tablen > l->Gapgsize()) l->OverflowProcess();
+				for (int ii = 0; ii < tablen; ii++)
+				{
+					wcsnmove(l->arr + l->gstart, L" ", 1);
+					l->gstart ++;
+					l->len ++;
+
+				}
+				counter = i + 1;
 			}
 		}
 
@@ -848,7 +837,14 @@ void Article::Insert(int &y, int &x, wchar_t * cc)
 		l->len += storelen;
 	
 	}
-	x = l->gstart;
-	undo a = new Undo(selectPos{selx,sely}, selectPos{ l->gstart,num });
-	UndoStack.push(a);
+	x = l->Getlen(LF);
+	undo a = new Undo(selectPos{selx,sely}, selectPos{ x,y });
+	if (f == U) UndoStack.push(a);
+	else if (f == R) RedoStack.push(a);
+
+}
+void Article::Emptyredo() {
+	while (!RedoStack.empty()) {
+		RedoStack.pop();
+	}
 }
