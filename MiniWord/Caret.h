@@ -15,8 +15,12 @@ public:
 	void MvDown(line&, HDC&);
 	void MvHome(line&, HDC&);
 	void MvEnd(line&, HDC&);
+	
+	void MvCHome(line&, HDC&);
+	void MvCEnd(line&, HDC&);
 
 	void CtrDelete(Article &,line&, HDC&);
 	void CtrEnter(Article &,line&, HDC&);
-	void CtrCaretMv(Article&, int, int, HDC&);
+
+	void CtrCaretMv(Article&, int x, int y, HDC&);//将光标移动到第y行，坐标x位置——即修改crt。其中若x大于y行行长，则光标横坐标crt.CaretPosX变为y行行长
 };
