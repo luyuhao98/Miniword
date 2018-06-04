@@ -6,21 +6,13 @@ void Caret::MvLeft(line& L, HDC& hdc)
 		int nCharWidth;
 		GetCharWidth32W(hdc, (UINT)L->Top(LF), (UINT)L->Top(LF),
 			&nCharWidth);
-		/*		if (0x4E00 <= L->Top(LF) && L->Top(LF) <= 0x9FBB) {
-					CaretPosX -= 2;
-				}
-				else
-					CaretPosX--;
-		*/
 		CaretPosX -= nCharWidth;
 		L->PointMove(-1);
 	}
-	else {
-		if (!L->IsFirstL()) {
-			L->Gapmove();
-			CaretPosX = L->pre->CharWidth(hdc);
-			CaretPosY -= 1;
-		}
+	else if (!L->IsFirstL()) {
+		L->Gapmove();
+		CaretPosX = L->pre->CharWidth(hdc);
+		CaretPosY -= 1;
 	}
 }
 
@@ -30,17 +22,15 @@ void Caret::MvRight(line& L, HDC& hdc)
 		int nCharWidth;
 		GetCharWidth32W(hdc, (UINT)L->Top(RG), (UINT)L->Top(RG),
 			&nCharWidth);
-
 		CaretPosX += nCharWidth;
 		L->PointMove(1);
 	}
-	else {
-		if (!L->IsLastL()) {
-			CaretPosX = 0;
-			CaretPosY += 1;
-			L->next->PointMoveto(0);
-		}
+	else if (!L->IsLastL()) {
+		CaretPosX = 0;
+		CaretPosY += 1;
+		L->next->PointMoveto(0);
 	}
+
 }
 
 void Caret::MvUp(line& L, HDC& hdc)
@@ -68,7 +58,6 @@ void Caret::MvDown(line& L, HDC& hdc)
 	if (!L->IsLastL()) {
 		L->Gapmove();
 		CaretPosY++;
-
 		while (L->next->CharWidth(LF, hdc) > CaretPosX)
 			L->next->PointMove(-1);
 		CaretPosX = L->next->CharWidth(LF, hdc);
