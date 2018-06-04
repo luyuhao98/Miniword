@@ -68,7 +68,7 @@ void Caret::MvDown(line& L, HDC& hdc)
 	}
 }
 
-void Caret::MvHome(line& L, HDC& hdc)
+void Caret::MvCHome(line& L, HDC& hdc)
 {
 	L->Gapmove();
 	while (!L->IsFirstL()) {
@@ -79,7 +79,7 @@ void Caret::MvHome(line& L, HDC& hdc)
 	L->PointMoveto(0);
 }
 
-void Caret::MvEnd(line& L, HDC& hdc)
+void Caret::MvCEnd(line& L, HDC& hdc)
 {
 	L->Gapmove();
 	while (!L->IsLastL()) {
@@ -89,6 +89,18 @@ void Caret::MvEnd(line& L, HDC& hdc)
 	CaretPosX = L->CharWidth(hdc);
 	L->Gapmove();
 }
+void Caret::MvHome(line& L, HDC& hdc)
+{
+	CaretPosX = 0;
+	L->PointMoveto(0);
+}
+
+void Caret::MvEnd(line& L, HDC& hdc)
+{
+	CaretPosX = L->CharWidth(hdc);
+	L->Gapmove();
+}
+
 
 void Caret::CtrDelete(Article &Ar, line& tmpL, HDC& hdc)
 {
@@ -118,12 +130,17 @@ void Caret::CtrCaretMv(Article& Ar, int x, int y, HDC& hdc)
 	L->Gapmove();
 	CaretPosY = y;
 	L = Ar.GetLine(CaretPosY);
+	
 	int width = 0;
 	int i = 0, nCharWidth = 0;
 
 	for (i = 0; i != L->gstart && width <= x; ++i) {
 		GetCharWidth32W(hdc, (UINT)L->arr[i], (UINT)L->arr[i], &nCharWidth);
 		width += nCharWidth;
+	}
+	if (width > x) { 
+		width -= nCharWidth;
+		i--;
 	}
 	CaretPosX = width;
 	L->PointMoveto(i);
