@@ -13,6 +13,7 @@ void Caret::MvLeft(line& L, HDC& hdc)
 		L->Gapmove();
 		CaretPosX = L->pre->CharWidth(hdc);
 		CaretPosY -= 1;
+		L = L->pre;
 	}
 }
 
@@ -28,7 +29,8 @@ void Caret::MvRight(line& L, HDC& hdc)
 	else if (!L->IsLastL()) {
 		CaretPosX = 0;
 		CaretPosY += 1;
-		L->next->PointMoveto(0);
+		L = L->next;
+		L->PointMoveto(0);
 	}
 
 }
@@ -38,13 +40,14 @@ void Caret::MvUp(line& L, HDC& hdc)
 	if (!L->IsFirstL()) {
 		L->Gapmove();
 		CaretPosY--;
-		if (CaretPosX > L->pre->CharWidth(hdc)) {
-			CaretPosX = L->pre->CharWidth(hdc);
+		L = L->pre;
+		if (CaretPosX > L->CharWidth(hdc)) {
+			CaretPosX = L->CharWidth(hdc);
 		}
 		else {
-			while (L->pre->CharWidth(LF, hdc) > CaretPosX)
-				L->pre->PointMove(-1);
-			CaretPosX = L->pre->CharWidth(LF, hdc);
+			while (L->CharWidth(LF, hdc) > CaretPosX)
+				L->PointMove(-1);
+			CaretPosX = L->CharWidth(LF, hdc);
 		}
 	}
 	else {
@@ -58,9 +61,10 @@ void Caret::MvDown(line& L, HDC& hdc)
 	if (!L->IsLastL()) {
 		L->Gapmove();
 		CaretPosY++;
-		while (L->next->CharWidth(LF, hdc) > CaretPosX)
-			L->next->PointMove(-1);
-		CaretPosX = L->next->CharWidth(LF, hdc);
+		L = L->next;
+		while (L->CharWidth(LF, hdc) > CaretPosX)
+			L->PointMove(-1);
+		CaretPosX = L->CharWidth(LF, hdc);
 	}
 	else {
 		L->Gapmove();
@@ -110,21 +114,19 @@ void Caret::CtrDelete(Article &Ar, line& tmpL, HDC& hdc)
 		p = Ar.Delete(CaretPosY, tmpL->Getlen(LF), CaretPosY, tmpL->Getlen(LF) + 1);
 	else if (!tmpL->IsLastL())p = Ar.Delete(CaretPosY, tmpL->Getlen(LF), CaretPosY + 1, 0);
 	else return;
-	CaretPosY = p.second;
-	CaretPosX = Ar.GetLine(CaretPosY)->CharWidth(LF, hdc);
 	Ar.Emptyredo();
 }
 
 void Caret::CtrEnter(Article &Ar, line& tmpL, HDC& hdc)
 {
-	wchar_t c[3] = L"\r\n";
+	wchar_t c[] = L"\r\n";
 	Ar.Insert(CaretPosY, c);
 	tmpL = tmpL->next;
 	CaretPosX = 0;
 	Ar.Emptyredo();
 }
 
-void Caret::CtrCaretMv(Article& Ar, int x, int y, HDC& hdc)
+line Caret::CtrCaretMv(Article& Ar, int x, int y, HDC& hdc)
 {
 	line L = Ar.GetLine(CaretPosY);
 	L->Gapmove();
@@ -144,4 +146,5 @@ void Caret::CtrCaretMv(Article& Ar, int x, int y, HDC& hdc)
 	}
 	CaretPosX = width;
 	L->PointMoveto(i);
+	return L;
 }
