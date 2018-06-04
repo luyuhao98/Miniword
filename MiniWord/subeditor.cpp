@@ -25,6 +25,8 @@ Article::~Article()
 		Remove(p);
 		p = firstL->next;
 	}
+	Emptyredo();
+	Emptyundo();
 }
 
 bool Article::IsEmpty() const {
@@ -852,4 +854,26 @@ void Article::Emptyredo() {
 	while (!RedoStack.empty()) {
 		RedoStack.pop();
 	}
+}
+void Article::Emptyundo() {
+	while (!UndoStack.empty()) {
+		UndoStack.pop();
+	}
+}
+/*清空整个Ar到初始状态*/
+void Article::Empty()
+{
+	line  p = firstL->next;
+	while (p != lastL) {
+		Remove(p);
+		p = firstL->next;
+	}
+	L = new Line;
+	firstL->next = L;
+	lastL->pre = L;
+	L->next = lastL;
+	L->pre = firstL;
+	lineNum = 1;
+	Emptyredo();
+	Emptyundo();
 }
