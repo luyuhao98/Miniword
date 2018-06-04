@@ -530,9 +530,14 @@ selectPos Article::Delete(int py, int px, int my, int mx,int flag)
 }
 
 /*拷贝 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符*/
-wchar_t* Article::GetStr(int py, int px, int my, int mx) {
+wchar_t* Article::GetStr(int py, int px, int my, int mx) 
+{
 	if (py == my) {
-		if (px == mx) return NULL;
+		if (px == mx) { 
+			wchar_t *tmp = new wchar_t;
+			tmp[0] = L'\0';
+			return tmp;
+		}
 		/*同行操作*/
 		else {
 			/*前提p(光标)所在位置gstart在px处*/
