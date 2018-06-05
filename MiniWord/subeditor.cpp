@@ -106,6 +106,8 @@ void Article::clearWord() {
 		curL = nextL;
 	}
 	lineNum = 1;
+	Emptyredo();
+	Emptyundo();
 }
 
 Line::Line(int sz)
@@ -860,16 +862,4 @@ void Article::Emptyundo() {
 		UndoStack.pop();
 	}
 }
-/*清空整个Ar到初始状态*/
-void Article::Empty()
-{
-	line  p = firstL->next;
-	while (!p->IsLastL()) {
-		Remove(p);
-		p = firstL->next;
-	}
-	p->MakeEmpty();
-	lineNum = 1;
-	Emptyredo();
-	Emptyundo();
-}
+
