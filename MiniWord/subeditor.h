@@ -146,6 +146,5 @@ public:
 	std::stack<undo> RedoStack;//恢复栈
 	void Emptyredo();//当有新操作时，清空恢复栈
 	void Emptyundo();//新建文档时，清空撤销栈
-	void Empty();//清空整个Ar到初始状态
 };
 
