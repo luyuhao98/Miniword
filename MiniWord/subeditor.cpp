@@ -864,15 +864,11 @@ void Article::Emptyundo() {
 void Article::Empty()
 {
 	line  p = firstL->next;
-	while (p != lastL) {
+	while (!p->IsLastL()) {
 		Remove(p);
 		p = firstL->next;
 	}
-	L = new Line;
-	firstL->next = L;
-	lastL->pre = L;
-	L->next = lastL;
-	L->pre = firstL;
+	p->MakeEmpty();
 	lineNum = 1;
 	Emptyredo();
 	Emptyundo();
