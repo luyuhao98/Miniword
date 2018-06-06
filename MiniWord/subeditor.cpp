@@ -762,12 +762,12 @@ line Article::OnReplace(line tmpL, wchar_t * preStr,wchar_t * rpStr) {
 
 }
 
-void Article::Insert(int &y, wchar_t *cc) {
+void Article::Insert(int &y, const wchar_t *cc) {
 	int x = GetLine(y)->Getlen(LF);
 	Insert(y, x, cc,U);
 }
 
-void Article::Insert(int &y, int &x, wchar_t * cc,int f)
+void Article::Insert(int &y, int &x, const wchar_t * cc,int f)
 {
 	int tablen = 4;
 
@@ -787,65 +787,57 @@ void Article::Insert(int &y, int &x, wchar_t * cc,int f)
 		}
 	}
 
-	if (!flag) {
-		while (cclen > l->Gapgsize()) l->OverflowProcess();
-		cclen = wcslen(cc);
-		wcsnmove(l->arr + l->gstart, cc, cclen);
-		l->gstart += cclen;
-		l->len += cclen;
-	}
-	else {
-		int storelen =l-> Getlen(RG);
-		wchar_t * store = new wchar_t[storelen + 1];
-		memset(store, 0, sizeof(wchar_t)*(storelen + 1));
-		sizeof(store);/////////////
-		wcsnmove(store, l->GetPos(RG), storelen);
+	int storelen =l-> Getlen(RG);
+	wchar_t * store = new wchar_t[storelen + 1];
+	memset(store, 0, sizeof(wchar_t)*(storelen + 1));
+	sizeof(store);/////////////
+	wcsnmove(store, l->GetPos(RG), storelen);
 
-		l->MakeEmpty(RG);
+	l->MakeEmpty(RG);
 
-		for (int i = 0; i <= cclen; i++) {
-			
-			if (cc[i] != L'\r' && i != cclen && cc[i]!=L'\t') {
-				continue;
-			}
-			int len = i - counter;
-			
-			while (len > l->Gapgsize()) l->OverflowProcess();
-
-			wcsnmove(l->arr + l->gstart, cc + counter, len);
-
-			l->gstart += len;
-			l->len += len;
-
-
-			if (cc[i] == L'\r')
-			{
-				i++;//跳到'\n'处,然后for循环的++跳到下一字符
-				counter = i + 1;
-				l = l->NewLine();
-				IncLineN();//行数加一
-				y++;
-			}
-			if (cc[i] == L'\t') {
-				if (tablen > l->Gapgsize()) l->OverflowProcess();
-				for (int ii = 0; ii < tablen; ii++)
-				{
-					wcsnmove(l->arr + l->gstart, L" ", 1);
-					l->gstart ++;
-					l->len ++;
-
-				}
-				counter = i + 1;
-			}
+	for (int i = 0; i <= cclen; i++) {
+		
+		if (cc[i] != L'\r' && i != cclen && cc[i]!=L'\t') {
+			continue;
 		}
+		int len = i - counter;
+		
+		while (len > l->Gapgsize()) l->OverflowProcess();
 
-		while (storelen > l->Gapgsize()) l->OverflowProcess();
+		wcsnmove(l->arr + l->gstart, cc + counter, len);
 
-		l->gend = l->size - storelen;
-		wcsnmove(l->arr + l->gend, store, storelen);
-		l->len += storelen;
-	
+		l->gstart += len;
+		l->len += len;
+
+
+		if (cc[i] == L'\r')
+		{
+			i++;//跳到'\n'处,然后for循环的++跳到下一字符
+			counter = i + 1;
+			l = l->NewLine();
+			IncLineN();//行数加一
+			y++;
+		}
+		if (cc[i] == L'\t') {
+			if (tablen > l->Gapgsize()) l->OverflowProcess();
+			for (int ii = 0; ii < tablen; ii++)
+			{
+				wcsnmove(l->arr + l->gstart, L" ", 1);
+				l->gstart ++;
+				l->len ++;
+
+			}
+			counter = i + 1;
+		}
 	}
+
+	while (storelen > l->Gapgsize()) l->OverflowProcess();
+
+	l->gend = l->size - storelen;
+	wcsnmove(l->arr + l->gend, store, storelen);
+	l->len += storelen;
+	
+	
 	x = l->Getlen(LF);
 	undo a = new Undo(selectPos{selx,sely}, selectPos{ x,y });
 	if (f == U) UndoStack.push(a);
