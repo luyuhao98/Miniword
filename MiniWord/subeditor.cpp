@@ -863,3 +863,28 @@ void Article::Emptyundo() {
 	}
 }
 
+int Article::GetTotalNum()
+{
+	int sum = 0;
+	line p = L;
+	while (!IsEnd(p)) {
+		sum += p->len;
+		p = p->next;
+	}
+	return sum;
+}
+int Article::ChGetTotalNum() 
+{
+	int sum = 0;
+	line p = L;
+	while (!IsEnd(p)) {
+		for (int i = p->gstart - 1; i >= 0; i--) 
+			if (0x4E00 <= p->arr[i] && p->arr[i] <= 0x9FBB)
+				sum++;
+		for (int i = p->gend; i < p->size; i++) 
+			if (0x4E00 <= p->arr[i] && p->arr[i] <= 0x9FBB)
+				sum++;
+		p = p->next;
+	}
+	return sum;
+}
