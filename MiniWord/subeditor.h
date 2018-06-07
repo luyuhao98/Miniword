@@ -126,8 +126,8 @@ public:
 	selectPos Delete(int py, int px, int my, int mx, int flag = U); //删除 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字 符
 	wchar_t* GetStr(int py, int px, int my, int mx); //复制 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符
 
-	void Insert(int &py, int &px, wchar_t * cc, int flag);//指定光标位置 插入字符串,并且改变py px 为当前所在位置,主要面向粘贴等
-	void Insert(int &py, wchar_t * cc);//同上插入字符串,不过此时为光标位置已经选好，主要面向撤销
+	void Insert(int &py, int &px, const wchar_t * cc, int flag);//指定光标位置 插入字符串,并且改变py px 为当前所在位置,主要面向粘贴等
+	void Insert(int &py, const wchar_t * cc);//同上插入字符串,不过此时为光标位置已经选好，主要面向撤销
 
 	 /* 查找功能 */
 	line onSearch(line tmpL, const wchar_t * t);
