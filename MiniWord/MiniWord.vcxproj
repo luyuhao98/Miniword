@@ -176,6 +176,7 @@
     <ResourceCompile Include="MiniWord.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="background.bmp" />
     <Image Include="MiniWord.ico" />
     <Image Include="small.ico" />
   </ItemGroup>
