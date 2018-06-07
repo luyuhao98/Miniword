@@ -146,5 +146,8 @@ public:
 	std::stack<undo> RedoStack;//恢复栈
 	void Emptyredo();//当有新操作时，清空恢复栈
 	void Emptyundo();//新建文档时，清空撤销栈
+
+	int GetTotalNum();//返回总字数
+	int ChGetTotalNum();//返回总中文字数
 };
 
