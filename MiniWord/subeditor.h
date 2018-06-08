@@ -4,34 +4,12 @@
 #include <stack>
 #include"undo.h"
 
-const int GapIncrement = 50;// gapArticle每次增加大小
-const int DefaultSize = 100;//默认
+const int GapIncrement = 30;// gapArticle每次增加大小
+const int DefaultSize = 60;//默认
 typedef class Line * line;
 enum stack { LF=-1 , RG=1 };
 
 enum UNRE { U, R };//区分对哪个栈进行操作
-/*
-发现：
-~x的范围：
-	0 到 size
-	光标的左面为第x个字符arr[x-1];即 x左边为arr[x-1],x右边为arr[x]
-	0:行最左（左面没有字符）
-	size:行最右（左面是最后字符,此时数组arr刚好满）
-~鼠标触发性：
-	单击鼠标与文本处按下（按下按下按下），即产生一个mark；
-	抬起鼠标即更新point，若mark==point，delete mark
-~上下键光标位置：
-	鼠标点击某行 或 刚刚编辑某行
-	记录此时光标到行头距离D=gstart。
-	此后上下键，满足：
-	若无新行(newLine),光标不动。
-	若D >= newLine->len,则光标移动到新行的最后一位，point.x = newLine->len;
-	若D < newLine->len,则光标移动到新行的D位置;
-
-	注：newLine 新行，line 型，是指相对本行已存在的上一行或下一行,不是新创建的一行
-
-~若自己实现复制粘贴，则需要新的Article
-*/
 
 typedef class Line
 {
@@ -99,8 +77,12 @@ private:
 	line firstL;
 	line lastL;
 	int lineNum;
+
 public:
 	line L;//目前正操作的Line头
+	int totalnum;
+	int totalnumwithoutspace;
+	int chinesenum;
 
 	Article();//构造 linehead的next为空
 	~Article();
@@ -147,7 +129,7 @@ public:
 	void Emptyredo();//当有新操作时，清空恢复栈
 	void Emptyundo();//新建文档时，清空撤销栈
 
-	int GetTotalNum();//返回总字数
-	int ChGetTotalNum();//返回总中文字数
+	void GetTotal();//返回总字数
+	int GetTotal(selectPos Begin, selectPos End);//返回选中总字数 并返回总行数
 };
 
