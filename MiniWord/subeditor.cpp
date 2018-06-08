@@ -881,21 +881,7 @@ void Article::GetTotal()
 	}
 	totalnumwithoutspace = totalnum - spacenum;
 }
-//int Article::ChGetTotalNum() 
-//{
-//	int sum = 0;
-//	line p = L;
-//	while (!IsEnd(p)) {
-//		for (int i = p->gstart - 1; i >= 0; i--) 
-//			if (0x4E00 <= p->arr[i] && p->arr[i] <= 0x9FBB)
-//				sum++;
-//		for (int i = p->gend; i < p->size; i++) 
-//			if (0x4E00 <= p->arr[i] && p->arr[i] <= 0x9FBB)
-//				sum++;
-//		p = p->next;
-//	}
-//	return sum;
-//}
+
 int Article::GetTotal(selectPos selectBegin, selectPos selectEnd)//·µ»ØÑ¡ÖÐ×Ü×ÖÊý
 {
 	selectPos fronter = (selectBegin.second < selectEnd.second) || (selectBegin.second == selectEnd.second&&selectBegin.first <= selectEnd.first) ? selectBegin : selectEnd;
@@ -908,7 +894,7 @@ int Article::GetTotal(selectPos selectBegin, selectPos selectEnd)//·µ»ØÑ¡ÖÐ×Ü×ÖÊ
 	int spacenum = 0;
 	
 	if (p == q) {
-		totalnum = fronter.first - backer.first + 1;
+		totalnum = backer.first - fronter.first + 1;
 		for(int i = p->UsertoGap(fronter.first+1);i<totalnum+ p->UsertoGap(fronter.first);i++)
 		{
 			if (0x4E00 <= p->arr[i] && p->arr[i] <= 0x9FBB)
