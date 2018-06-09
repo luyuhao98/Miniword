@@ -845,13 +845,19 @@ void Article::Insert(int &y, int &x, const wchar_t * cc,int f)
 
 }
 void Article::Emptyredo() {
+	undo tmp;
 	while (!RedoStack.empty()) {
+		tmp = RedoStack.top();
 		RedoStack.pop();
+		delete tmp;
 	}
 }
 void Article::Emptyundo() {
+	undo tmp;
 	while (!UndoStack.empty()) {
+		tmp = UndoStack.top();
 		UndoStack.pop();
+		delete tmp;
 	}
 }
 
