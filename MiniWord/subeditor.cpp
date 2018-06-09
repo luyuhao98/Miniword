@@ -276,9 +276,9 @@ int Line::Getsize()
 /*传入面向user字符(有效字符)的位置(index)，返回在arr中的真实位置*/
 int Line::UsertoGap(int x)
 {
-	if (x < 0 || x >= size) return -1;//error,x不合法
-	if (x < gstart) return x;
-	else return x + Line::Gapgsize();
+	if (x <= 0 || x >len) return -1;//error,x不合法
+	if (x <= gstart) return x-1;
+	else return x-1 + Line::Gapgsize();
 }
 
 /*取gs（目前光标位置）*/
@@ -855,28 +855,79 @@ void Article::Emptyundo() {
 	}
 }
 
-int Article::GetTotalNum()
+void Article::GetTotal()
 {
-	int sum = 0;
+	totalnum = 0;
+	chinesenum = 0;
+	int spacenum = 0;
 	line p = L;
 	while (!IsEnd(p)) {
-		sum += p->len;
+		for (int i = p->gstart - 1; i >= 0; i--)
+		{
+			if (0x4E00 <= p->arr[i] && p->arr[i] <= 0x9FBB)
+				chinesenum++;
+			else if (p->arr[i] == L' ')
+				spacenum++;
+		}
+		for (int i = p->gend; i < p->size; i++)
+		{
+			if (0x4E00 <= p->arr[i] && p->arr[i] <= 0x9FBB)
+				chinesenum++;
+			else if (p->arr[i] == L' ')
+				spacenum++;
+		}
+		totalnum += p->len;
 		p = p->next;
 	}
-	return sum;
+	totalnumwithoutspace = totalnum - spacenum;
 }
-int Article::ChGetTotalNum() 
+
+int Article::GetTotal(selectPos selectBegin, selectPos selectEnd)//返回选中总字数
 {
-	int sum = 0;
-	line p = L;
-	while (!IsEnd(p)) {
-		for (int i = p->gstart - 1; i >= 0; i--) 
+	selectPos fronter = (selectBegin.second < selectEnd.second) || (selectBegin.second == selectEnd.second&&selectBegin.first <= selectEnd.first) ? selectBegin : selectEnd;
+	selectPos backer = (selectBegin.second < selectEnd.second) || (selectBegin.second == selectEnd.second&&selectBegin.first <= selectEnd.first) ? selectEnd : selectBegin;
+	line p = GetLine(fronter.second);
+	line q = GetLine(backer.second);
+
+	totalnum = 0;
+	chinesenum = 0;
+	int spacenum = 0;
+	
+	if (p == q) {
+		totalnum = backer.first - fronter.first + 1;
+		for(int i = p->UsertoGap(fronter.first+1);i<totalnum+ p->UsertoGap(fronter.first);i++)
+		{
 			if (0x4E00 <= p->arr[i] && p->arr[i] <= 0x9FBB)
-				sum++;
-		for (int i = p->gend; i < p->size; i++) 
+				chinesenum++;
+			else if (p->arr[i] == L' ')
+				spacenum++;
+		}
+	} else {
+		totalnum += p->len-fronter.first;
+		for (int i = p->UsertoGap(fronter.first+1); i<=p->UsertoGap(p->len); i++)
 			if (0x4E00 <= p->arr[i] && p->arr[i] <= 0x9FBB)
-				sum++;
+				chinesenum++;
+			else if (p->arr[i] == L' ')
+				spacenum++;
 		p = p->next;
+		while (p != q) {
+			for (int i = p->UsertoGap(1); i <= p->UsertoGap(p->len); i++)
+				if (0x4E00 <= p->arr[i] && p->arr[i] <= 0x9FBB)
+					chinesenum++;
+				else if (p->arr[i] == L' ')
+					spacenum++;
+
+			totalnum += p->len;
+			p = p->next;
+		}
+		for (int i = p->UsertoGap(1); i <= p->UsertoGap(backer.first); i++)
+			if (0x4E00 <= p->arr[i] && p->arr[i] <= 0x9FBB)
+				chinesenum++;
+			else if (p->arr[i] == L' ')
+				spacenum++;
+		totalnum += backer.first;
+
 	}
-	return sum;
+	totalnumwithoutspace = totalnum - spacenum;
+	return backer.second - fronter.second + 1;
 }

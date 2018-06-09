@@ -90,8 +90,9 @@ void Caret::MvCEnd(line& L, HDC& hdc)
 		L = L->next;
 		CaretPosY++;
 	}
-	CaretPosX = L->CharWidth(hdc);
 	L->Gapmove();
+	CaretPosX = L->CharWidth(hdc);
+
 }
 void Caret::MvHome(line& L, HDC& hdc)
 {
