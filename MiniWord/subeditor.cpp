@@ -198,16 +198,16 @@ void Line::OverflowProcess()
 /*为正，光标往行尾移动p位。为负，光标往行首移动p位。
 PointMove(1) 跟 LeftMovePoint 等价
 */
-int Line::PointMove(int p)
+void Line::PointMove(int p)
 {
 	if (p > 0) {
 		if (p == 1 && gstart == len)
 		{
 			//move point to next line begin
-			return 1;
+			return;
 		}
 		if (p > len - gstart)
-			return 0;
+			return;
 		else {
 			wcsnmove(arr + gstart, arr + gend, p);
 			gstart += p;
@@ -219,17 +219,17 @@ int Line::PointMove(int p)
 		if (p == 1 && gstart == 0)
 		{
 			//move point to previous line end
-			return 1;
+			return;
 		}
 		if (p > gstart)
-			return 0;
+			return;
 		else {
 			memmove(arr + gend - p, arr + gstart - p, sizeof(wchar_t)*p);
 			gstart -= p;
 			gend -= p;
 		}
 	}
-	return 1;
+	return;
 }
 
 /*将光标移动到第d个字符*/

@@ -31,45 +31,35 @@ public:
 	int RleaseProcess();//释放gapbuffer为0;
 	void OverflowProcess(); //用于满了后申请数组
 
-	int PointMove(int p); //为正，光标往行尾移动p位。为负，光标往行首移动p位。
+	void PointMove(int p); //为正，光标往行尾移动p位。为负，光标往行首移动p位。
 	void PointMoveto(int d);//将光标移动到第d个字符
 	//PointMove( -1 )		int LeftMovePoint();//不改变原句，光标左移
 	//PointMove( 1 )		int RightMovePoint();//不改变原句，光标右移
 	int Gapmove();//改变point后移动gap
-
 	int UsertoGap(int);//传入面向user字符的位置，返回在arr中的真实位置
-
 	int Gapgsize();//取gap的宽度;
 	int GetPoint();//取gstart（目前光标位置）
-	int GetGend();//取gend;
-	int Getsize();//取size (总大小)值
 	int Getlen();//取len 有效字符长度（用户眼中字符长度）
 	int Getlen(int i) const;//取len 有效字符长度（用户眼中字符长度）
-
 	wchar_t * GetPos();//返回该行字符串指针
 	wchar_t * GetPos(int i);//返回左右字符串 LF, return arr ，RG ， return arr+gend
 	wchar_t * GetStr();//返回字符串;
-
 	int CharWidth(HDC hdc);//字符长度
 	int CharWidth(int i, HDC hdc) const;//i=1 右侧，i=-1 左侧
-
 	int IsEmpty(int i) const;	//判断Line是否为空 ，i可为LF，RG
 	int IsEmpty();			//判断Line是否为空
-
-
 	void MakeEmpty();//清空内容
 	void MakeEmpty(int i);//清空内容 清空左右内容
-
 	wchar_t Top(int i);//LG得到左侧元素 RG得到右侧元素
 	void Push(const wchar_t c, int i);//插入一个字符 LF,插左，RG插右
-
 	wchar_t Pop(int p);//删除一个字符，p=1删除光标后面的相当于del , p=-1删除光标前面的相当于backspace。
 	void Rwrite(const wchar_t &c);//替换输入下一字符
-
 	bool IsFirstL() { return this->pre->pre == nullptr; }
 	bool IsLastL() { return this->next->next == nullptr; }
 
-	//	int Savespace();//不再操作本Line（newLine或者point移出本行）时执行，若Line为空，释放数组。若gap>400，整理gap至400。
+	int GetGend();//取gend;
+	int Getsize();//取size (总大小)值
+
 } *line;
 
 class Article {
@@ -86,25 +76,19 @@ public:
 
 	Article();//构造 linehead的next为空
 	~Article();
-
 	bool IsEmpty() const;
 	bool IsFirstL(line& L) const { return L->pre == firstL; }
 	bool IsLastL(line& L) const { return L->next == lastL; }
 	bool IsEnd(line& L) const { return L == lastL; }
-
 	line GetLine(int lineNum) const;
 	int GetNum(line& L) const;
 	int MaxWidth(HDC) const;
-
 	void InsertAfter(line& L);
 	void Remove(line &L);
-
 	int LineNum(void) const { return lineNum; }
 	void IncLineN(void) { lineNum++; }
 	void DecLineN(void) { lineNum--; }
 	void clearWord(); //清空当前Article
-
-
 	selectPos Delete(int py, int px, int my, int mx, int flag = U); //删除 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字 符
 	wchar_t* GetStr(int py, int px, int my, int mx); //复制 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符
 
