@@ -69,7 +69,7 @@ private:
 	int lineNum;
 
 public:
-	line L;//目前正操作的Line头
+	line L;//首行，无法删掉
 	int totalnum;
 	int totalnumwithoutspace;
 	int chinesenum;
@@ -91,18 +91,14 @@ public:
 	void clearWord(); //清空当前Article
 	selectPos Delete(int py, int px, int my, int mx, int flag = U); //删除 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字 符
 	wchar_t* GetStr(int py, int px, int my, int mx); //复制 从 py行第px个字符右侧光标 到 my行第mx个字符右侧光标 之间的所有字符
-
 	void Insert(int &py, int &px, const wchar_t * cc, int flag);//指定光标位置 插入字符串,并且改变py px 为当前所在位置,主要面向粘贴等
 	void Insert(int &py, const wchar_t * cc);//同上插入字符串,不过此时为光标位置已经选好，主要面向撤销
-
 	 /* 查找功能 */
 	line onSearch(line tmpL, const wchar_t * t);
 	int KMP(const wchar_t *s, const wchar_t *t);
 	int * getNextVal(const wchar_t *s);
-
 	/*替换功能*/
 	line OnReplace(line tmpL, wchar_t * preStr, wchar_t * rpStr); //替换操作，preStr是查找的串，rpStr是待替换上的串
-
 	/*给定坐标x（左条长+现鼠标与左端距离），行号y
 	return值为：若点下后的gstart。超过行距返回glen*/
 	int GetCharNum(int x, int y, HDC& hdc);
