@@ -14,3 +14,5 @@
 #忽略.vs文件
 /.vs/
 /MiniWord/MiniWord.vcxproj.*
+/msvcp140.dll
+/vcruntime140.dll
