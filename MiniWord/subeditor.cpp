@@ -75,8 +75,6 @@ void Article::InsertAfter(line& L)
 
 void Article::Remove(line & L)
 {
-	L->pre->next = L->next;
-	L->next->pre = L->pre;
 	delete(L);
 	lineNum--;
 }

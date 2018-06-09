@@ -1,4 +1,4 @@
-#任何 Debug Realease 文件夹下只将.exe文件放入版本库
+﻿#任何 Debug Realease 文件夹下只将.exe文件放入版本库
 #fuck *.exe冲突难以解决，直接ignore
 
 **/Debug/*
@@ -7,6 +7,10 @@
 #!**/Release/*.exe
 *.aps
 
+!**/Debug/msvcp140.dll
+!**/Debug/vcruntime140.dll
+!**/Release/vcruntime140.dll
+!**/Release/msvcp140.dll
 #忽略.vs文件
 /.vs/
 /MiniWord/MiniWord.vcxproj.*
